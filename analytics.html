@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика - Все устройства</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 32px;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+        
+        .last-update {
+            color: #7f8c8d;
+            font-size: 14px;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #7f8c8d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+            background: #f8f9fa;
+        }
+        
+        .tab:hover {
+            color: #2c3e50;
+            background: #f8f9fa;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .user-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .user-card.new {
+            border-left: 4px solid #2196F3;
+            background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
+        }
+        
+        .user-card.mobile {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .user-card.api {
+            border-left: 4px solid #FF9800;
+            background: linear-gradient(135deg, #fff3e0, #f8f9fa);
+        }
+        
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .user-id {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .user-badges {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .badge-new {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .badge-mobile {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .badge-api {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .badge-desktop {
+            background: #9C27B0;
+            color: white;
+        }
+        
+        .user-details {
+            font-size: 12px;
+            color: #5a6c7d;
+            line-height: 1.5;
+        }
+        
+        .user-details strong {
+            color: #2c3e50;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .chart-title {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .real-time-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .refreshing {
+            animation: rotate 1s linear infinite;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Расширенная аналитика</h1>
+            <div class="header-controls">
+                <div class="real-time-indicator">
+                    <div class="pulse"></div>
+                    LIVE
+                </div>
+                <button class="btn btn-primary" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> Обновить
+                </button>
+                <button class="btn btn-secondary" id="exportBtn">
+                    <i class="fas fa-download"></i> Экспорт
+                </button>
+                <button class="btn btn-danger" id="clearBtn">
+                    <i class="fas fa-trash"></i> Очистить
+                </button>
+            </div>
+        </div>
+        
+        <div class="last-update" id="lastUpdate">
+            <i class="fas fa-clock"></i> Последнее обновление: загружается...
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <!-- Статистика будет здесь -->
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="users">👥 Все пользователи</button>
+            <button class="tab" data-tab="charts">📊 Графики</button>
+            <button class="tab" data-tab="devices">📱 Устройства</button>
+            <button class="tab" data-tab="sources">🌐 Источники</button>
+            <button class="tab" data-tab="real-time">⚡ Онлайн</button>
+        </div>
+
+        <div id="tab-users" class="tab-content active">
+            <div class="users-grid" id="usersGrid">
+                <!-- Пользователи будут здесь -->
+            </div>
+        </div>
+
+        <div id="tab-charts" class="tab-content">
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">📈 Активность по времени</div>
+                    <canvas id="activityChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🥧 Распределение по устройствам</div>
+                    <canvas id="devicesChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🌍 География пользователей</div>
+                    <canvas id="geoChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🕒 Время суток активности</div>
+                    <canvas id="hoursChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-devices" class="tab-content">
+            <div class="users-grid" id="devicesGrid">
+                <!-- Устройства будут здесь -->
+            </div>
+        </div>
+
+        <div id="tab-sources" class="tab-content">
+            <div class="chart-container">
+                <div class="chart-title">🔗 Источники трафика</div>
+                <canvas id="sourcesChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <div id="tab-real-time" class="tab-content">
+            <div class="stats-grid" id="realtimeStats">
+                <!-- Статистика онлайн -->
+            </div>
+            <div class="users-grid" id="realtimeUsers">
+                <!-- Онлайн пользователи -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ANALYTICS_STORAGE_KEY = 'global_analytics_pro_max';
+        let charts = {};
+        let autoRefreshInterval;
+
+        // Улучшенное получение IP
+        async function getUserIP() {
+            const services = [
+                'https://api.ipify.org?format=json',
+                'https://api64.ipify.org?format=json',
+                'https://ipinfo.io/json',
+                'https://api.my-ip.io/ip.json'
+            ];
+
+            for (const service of services) {
+                try {
+                    const response = await fetch(service);
+                    const data = await response.json();
+                    return data.ip || data.query || 'unknown';
+                } catch (error) {
+                    continue;
+                }
+            }
+            return 'unknown';
+        }
+
+        // Получение геолокации
+        async function getGeoLocation(ip) {
+            if (ip === 'unknown') return { country: 'Unknown', city: 'Unknown' };
+            try {
+                const response = await fetch(`https://ipapi.co/${ip}/json/`);
+                const data = await response.json();
+                return {
+                    country: data.country_name || 'Unknown',
+                    city: data.city || 'Unknown',
+                    country_code: data.country_code || 'UN'
+                };
+            } catch (error) {
+                return { country: 'Unknown', city: 'Unknown', country_code: 'UN' };
+            }
+        }
+
+        // Определение устройства
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            let device = 'desktop', os = 'Unknown', browser = 'Unknown';
+
+            if (/Mobile|Android|iPhone|iPad/i.test(ua)) device = 'mobile';
+            if (ua.includes('Windows')) os = 'Windows';
+            else if (ua.includes('Mac')) os = 'Mac OS';
+            else if (ua.includes('Linux')) os = 'Linux';
+            else if (ua.includes('Android')) os = 'Android';
+            else if (ua.includes('iOS') || ua.includes('iPhone')) os = 'iOS';
+
+            if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
+            else if (ua.includes('Firefox')) browser = 'Firefox';
+            else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+            else if (ua.includes('Edg')) browser = 'Edge';
+
+            return { device, os, browser };
+        }
+
+        // Сохранение пользователя
+        async function saveCurrentUser() {
+            try {
+                const ip = await getUserIP();
+                const geo = await getGeoLocation(ip);
+                const deviceInfo = getDeviceInfo();
+                
+                const userData = {
+                    id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    ip: ip,
+                    country: geo.country,
+                    city: geo.city,
+                    country_code: geo.country_code,
+                    userAgent: navigator.userAgent,
+                    device: deviceInfo.device,
+                    os: deviceInfo.os,
+                    browser: deviceInfo.browser,
+                    screen: screen.width + 'x' + screen.height,
+                    language: navigator.language,
+                    referrer: document.referrer || 'direct',
+                    source: getSourceType(document.referrer),
+                    timestamp: new Date().toISOString(),
+                    lastActivity: new Date().toISOString()
+                };
+
+                const analytics = getAnalytics();
+                
+                // Проверяем уникальность пользователя
+                const existingUserIndex = analytics.users.findIndex(u => 
+                    u.ip === userData.ip && 
+                    u.userAgent === userData.userAgent
+                );
+
+                if (existingUserIndex === -1) {
+                    userData.visitCount = 1;
+                    userData.firstVisit = userData.timestamp;
+                    analytics.users.push(userData);
+                    console.log('✅ Новый пользователь:', userData.id);
+                } else {
+                    analytics.users[existingUserIndex].lastActivity = userData.timestamp;
+                    analytics.users[existingUserIndex].visitCount++;
+                    console.log('🔄 Обновлен пользователь:', analytics.users[existingUserIndex].id);
+                }
+
+                localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analytics));
+                return userData;
+
+            } catch (error) {
+                console.error('❌ Ошибка сохранения:', error);
+            }
+        }
+
+        function getAnalytics() {
+            const stored = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+            if (!stored) {
+                return {
+                    users: [],
+                    startTime: new Date().toISOString()
+                };
+            }
+            return JSON.parse(stored);
+        }
+
+        function getSourceType(referrer) {
+            if (!referrer) return 'direct';
+            if (referrer.includes('google') || referrer.includes('yandex')) return 'search';
+            if (referrer.includes('telegram') || referrer.includes('whatsapp')) return 'messenger';
+            if (referrer.includes('facebook') || referrer.includes('instagram')) return 'social';
+            if (referrer.includes('api.') || referrer.includes('bot')) return 'api';
+            return 'other';
+        }
+
+        // Показать аналитику
+        function showAnalytics() {
+            const analytics = getAnalytics();
+            const now = new Date();
+            
+            document.getElementById('lastUpdate').innerHTML = 
+                `<i class="fas fa-clock"></i> Последнее обновление: ${now.toLocaleString('ru-RU')} | Пользователей: ${analytics.users.length}`;
+
+            showStats(analytics);
+            showUsers(analytics);
+            showCharts(analytics);
+            showRealTime(analytics);
+        }
+
+        function showStats(analytics) {
+            const users = analytics.users;
+            const now = new Date();
+            const today = now.toDateString();
+
+            const stats = {
+                totalUsers: users.length,
+                mobileUsers: users.filter(u => u.device === 'mobile').length,
+                todayUsers: users.filter(u => new Date(u.lastActivity).toDateString() === today).length,
+                uniqueCountries: new Set(users.map(u => u.country)).size,
+                returningUsers: users.filter(u => u.visitCount > 1).length,
+                apiUsers: users.filter(u => u.source === 'api').length,
+                onlineUsers: users.filter(u => (now - new Date(u.lastActivity)) < 300000).length,
+                totalVisits: users.reduce((sum, u) => sum + u.visitCount, 0)
+            };
+
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.totalUsers}</div>
+                    <div class="stat-label">Всего пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.onlineUsers}</div>
+                    <div class="stat-label">Онлайн сейчас</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.mobileUsers}</div>
+                    <div class="stat-label">Мобильных</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.todayUsers}</div>
+                    <div class="stat-label">Сегодня</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.uniqueCountries}</div>
+                    <div class="stat-label">Стран</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.totalVisits}</div>
+                    <div class="stat-label">Всего визитов</div>
+                </div>
+            `;
+        }
+
+        function showUsers(analytics) {
+            const users = analytics.users.sort((a, b) => 
+                new Date(b.lastActivity) - new Date(a.lastActivity)
+            );
+
+            const usersGrid = document.getElementById('usersGrid');
+            usersGrid.innerHTML = '';
+
+            if (users.length === 0) {
+                usersGrid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>Пока нет пользователей</h3>
+                        <p>Данные появятся когда пользователи посетят страницу</p>
+                    </div>
+                `;
+                return;
+            }
+
+            users.forEach(user => {
+                const isNew = isUserNewToday(user);
+                const isOnline = isUserOnline(user);
+                
+                let badges = '';
+                if (isNew) badges += '<span class="badge badge-new">NEW</span>';
+                if (user.device === 'mobile') badges += '<span class="badge badge-mobile">MOBILE</span>';
+                else badges += '<span class="badge badge-desktop">DESKTOP</span>';
+                if (user.source === 'api') badges += '<span class="badge badge-api">API</span>';
+
+                const userCard = document.createElement('div');
+                userCard.className = `user-card ${isNew ? 'new' : ''} ${user.device === 'mobile' ? 'mobile' : ''} ${user.source === 'api' ? 'api' : ''}`;
+                userCard.innerHTML = `
+                    <div class="user-header">
+                        <div class="user-id">${user.id}</div>
+                        <div class="user-badges">${badges}</div>
+                    </div>
+                    <div class="user-details">
+                        <strong>🌐 IP:</strong> ${user.ip}<br>
+                        <strong>📍 Локация:</strong> ${user.city}, ${user.country}<br>
+                        <strong>📱 Устройство:</strong> ${user.browser} на ${user.os}<br>
+                        <strong>🖥️ Экран:</strong> ${user.screen}<br>
+                        <strong>🔗 Источник:</strong> ${user.source}<br>
+                        <strong>👀 Визитов:</strong> ${user.visitCount}<br>
+                        <strong>⏰ Первый визит:</strong> ${new Date(user.firstVisit).toLocaleString('ru-RU')}<br>
+                        <strong>🕒 Последняя активность:</strong> ${new Date(user.lastActivity).toLocaleString('ru-RU')}
+                        ${isOnline ? '<br><strong style="color:#4CAF50;">🟢 СЕЙЧАС ОНЛАЙН</strong>' : ''}
+                    </div>
+                `;
+                usersGrid.appendChild(userCard);
+            });
+        }
+
+        function showCharts(analytics) {
+            const users = analytics.users;
+            
+            // Активность по дням
+            const dailyData = {};
+            users.forEach(user => {
+                const date = new Date(user.firstVisit).toDateString();
+                dailyData[date] = (dailyData[date] || 0) + 1;
+            });
+
+            // Устройства
+            const devicesData = {
+                mobile: users.filter(u => u.device === 'mobile').length,
+                desktop: users.filter(u => u.device === 'desktop').length
+            };
+
+            // География
+            const geoData = {};
+            users.forEach(user => {
+                geoData[user.country] = (geoData[user.country] || 0) + 1;
+            });
+
+            // Время суток
+            const hoursData = Array(24).fill(0);
+            users.forEach(user => {
+                const hour = new Date(user.firstVisit).getHours();
+                hoursData[hour]++;
+            });
+
+            // Создание графиков
+            createChart('activityChart', 'line', {
+                labels: Object.keys(dailyData).slice(-7),
+                data: Object.values(dailyData).slice(-7),
+                label: 'Новые пользователи'
+            });
+
+            createChart('devicesChart', 'doughnut', {
+                labels: ['Мобильные', 'Десктоп'],
+                data: [devicesData.mobile, devicesData.desktop],
+                colors: ['#4CAF50', '#2196F3']
+            });
+
+            createChart('geoChart', 'bar', {
+                labels: Object.keys(geoData).slice(0, 10),
+                data: Object.values(geoData).slice(0, 10),
+                label: 'Пользователи по странам'
+            });
+
+            createChart('hoursChart', 'line', {
+                labels: Array.from({length: 24}, (_, i) => i + ':00'),
+                data: hoursData,
+                label: 'Активность по часам'
+            });
+
+            // График источников
+            const sourcesData = {};
+            users.forEach(user => {
+                sourcesData[user.source] = (sourcesData[user.source] || 0) + 1;
+            });
+
+            createChart('sourcesChart', 'pie', {
+                labels: Object.keys(sourcesData),
+                data: Object.values(sourcesData),
+                colors: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#795548']
+            });
+        }
+
+        function createChart(canvasId, type, data) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            const config = {
+                type: type,
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: data.label,
+                        data: data.data,
+                        backgroundColor: data.colors || '#4CAF50',
+                        borderColor: type === 'line' ? '#4CAF50' : undefined,
+                        borderWidth: type === 'line' ? 3 : 1,
+                        tension: type === 'line' ? 0.4 : undefined
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            };
+
+            charts[canvasId] = new Chart(ctx, config);
+        }
+
+        function showRealTime(analytics) {
+            const now = new Date();
+            const onlineUsers = analytics.users.filter(u => isUserOnline(u));
+            
+            document.getElementById('realtimeStats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${onlineUsers.length}</div>
+                    <div class="stat-label">Онлайн сейчас</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${analytics.users.filter(u => isUserNewToday(u)).length}</div>
+                    <div class="stat-label">Новых сегодня</div>
+                </div>
+            `;
+
+            const realtimeUsers = document.getElementById('realtimeUsers');
+            realtimeUsers.innerHTML = '';
+
+            onlineUsers.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card new';
+                userCard.innerHTML = `
+                    <div class="user-header">
+                        <div class="user-id">${user.id}</div>
+                        <div class="user-badges">
+                            <span class="badge badge-new">ONLINE</span>
+                            ${user.device === 'mobile' ? '<span class="badge badge-mobile">MOBILE</span>' : '<span class="badge badge-desktop">DESKTOP</span>'}
+                        </div>
+                    </div>
+                    <div class="user-details">
+                        <strong>🌐 IP:</strong> ${user.ip}<br>
+                        <strong>📍 Локация:</strong> ${user.city}, ${user.country}<br>
+                        <strong>📱 Устройство:</strong> ${user.browser} на ${user.os}<br>
+                        <strong>🕒 Активен:</strong> ${new Date(user.lastActivity).toLocaleTimeString('ru-RU')}<br>
+                        <strong>👀 Визитов:</strong> ${user.visitCount}
+                    </div>
+                `;
+                realtimeUsers.appendChild(userCard);
+            });
+        }
+
+        function isUserNewToday(user) {
+            return new Date(user.firstVisit).toDateString() === new Date().toDateString();
+        }
+
+        function isUserOnline(user) {
+            return (new Date() - new Date(user.lastActivity)) < 300000; // 5 минут
+        }
+
+        function exportData() {
+            const analytics = getAnalytics();
+            const dataStr = JSON.stringify(analytics, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearData() {
+            if (confirm('Вы уверены что хотите очистить все данные аналитики?')) {
+                localStorage.removeItem(ANALYTICS_STORAGE_KEY);
+                showAnalytics();
+            }
+        }
+
+        function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            const icon = btn.querySelector('i');
+            icon.classList.add('refreshing');
+            
+            saveCurrentUser().then(() => {
+                showAnalytics();
+                setTimeout(() => {
+                    icon.classList.remove('refreshing');
+                }, 1000);
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // Автообновление
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    refreshData();
+                }
+            }, 30000); // 30 секунд
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            await saveCurrentUser();
+            showAnalytics();
+            startAutoRefresh();
+
+            document.getElementById('refreshBtn').addEventListener('click', refreshData);
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+            document.getElementById('clearBtn').addEventListener('click', clearData);
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+        });
+    </script>
+</body>
+</html>
