@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Успешная операция</title>
+    <!-- Open Graph мета-теги для соцсетей и мессенджеров -->
+    <meta property="og:title" content="Операция завершена">
+    <meta property="og:description" content="Системное уведомление">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Операция завершена">
+    <meta name="twitter:description" content="Системное уведомление">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 35px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+        }
+
+        .success-icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+            animation: iconBounce 0.8s ease-out;
+        }
+
+        .success-icon i {
+            font-size: 40px;
+            color: white;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .message {
+            color: #5a6c7d;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .details {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: left;
+            border: 1px solid #eef2f7;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .detail-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #5a6c7d;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .security-badge {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .sbp-notice {
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #eef2f7;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: #f8fafc;
+            color: #5a6c7d;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+            transform: translateY(-3px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.4s ease-out;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            color: #5a6c7d;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #2c3e50;
+        }
+
+        .modal-icon {
+            width: 70px;
+            height: 70px;
+            background: #ffebee;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-icon i {
+            font-size: 30px;
+            color: #f44336;
+        }
+
+        .modal h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .modal p {
+            color: #5a6c7d;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .phone-number {
+            display: inline-block;
+            background: #f8fafc;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 15px 0;
+            border: 2px solid #e2e8f0;
+        }
+
+        .call-btn {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .call-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .call-btn i {
+            margin-right: 10px;
+        }
+
+        @keyframes iconBounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .success-card { padding: 30px 20px; }
+            .button-group { flex-direction: column; }
+            h1 { font-size: 24px; }
+            .success-icon { width: 80px; height: 80px; }
+            .success-icon i { font-size: 36px; }
+            .modal-content { padding: 30px 20px; }
+            .phone-number { font-size: 18px; padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-card">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            
+            <h1>Счет успешно привязан!</h1>
+            
+            <p class="message">
+                Ваш банковский счет был успешно привязан к системе оплаты. 
+                Теперь Вам доступны операции без смс подтверждения.
+            </p>
+            
+            <div class="details">
+                <div class="detail-item">
+                    <span class="detail-label">Статус:</span>
+                    <span class="status-badge">Активен <i class="fas fa-check"></i></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Дата привязки:</span>
+                    <span class="detail-value">27 ноября 2025 г.</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Безопасность:</span>
+                    <span class="security-badge">Защищено</span>
+                </div>
+            </div>
+            
+            <div class="sbp-notice">
+                Счет успешно привязан к СБП
+            </div>
+            
+            <div class="button-group">
+                <button id="cancelBtn" class="btn btn-cancel">
+                    <i class="fas fa-times" style="margin-right: 8px;"></i>
+                    Отменить привязку
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-icon">
+                <i class="fas fa-phone-alt"></i>
+            </div>
+            <h2>Отмена привязки счета</h2>
+            <p>Для отмены привязки счета позвоните по номеру:</p>
+            <div class="phone-number">7 (979) 028-54-96</div>
+            <p>Наши операторы доступны с 00:00 до 24:00 ежедневно</p>
+            <a href="tel:+78001234567" class="call-btn">
+                <i class="fas fa-phone"></i> Позвонить сейчас
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const cancelBtn = document.getElementById('cancelBtn');
+        const modal = document.getElementById('cancelModal');
+        const closeBtn = document.querySelector('.close-btn');
+        
+        cancelBtn.addEventListener('click', function() {
+            modal.style.display = 'flex';
+        });
+        
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
