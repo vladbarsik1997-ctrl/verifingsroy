@@ -163,6 +163,20 @@
             transform: translateY(-3px);
         }
 
+        .btn-analytics {
+            background: #6c757d;
+            color: white;
+            border: 2px solid #5a6268;
+            font-size: 14px;
+            padding: 10px 20px;
+            margin-top: 10px;
+        }
+
+        .btn-analytics:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -267,33 +281,148 @@
             margin-right: 10px;
         }
 
-        .analytics-panel {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #6c757d;
-            border: 1px solid #e9ecef;
-            max-height: 200px;
-            overflow-y: auto;
+        /* Стили для окна аналитики */
+        .analytics-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
         }
 
-        .analytics-panel h3 {
-            margin-bottom: 10px;
-            color: #495057;
+        .analytics-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            width: 800px;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eef2f7;
+            padding-bottom: 15px;
+        }
+
+        .analytics-title {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .analytics-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
             font-size: 14px;
         }
 
-        .analytics-toggle {
-            background: #6c757d;
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .user-item {
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .user-id {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-ip {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .user-details {
+            font-size: 12px;
+            color: #5a6c7d;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .password-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 10px;
-            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+
+        .password-btn:hover {
+            background: #45a049;
+        }
+
+        .password-error {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
         }
 
         @keyframes iconBounce {
@@ -360,6 +489,15 @@
                 font-size: 18px;
                 padding: 12px 20px;
             }
+
+            .analytics-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .analytics-stats {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -399,15 +537,14 @@
                 </button>
             </div>
 
-            <!-- Панель аналитики -->
-            <div class="analytics-panel" id="analyticsPanel" style="display: none;">
-                <button class="analytics-toggle" onclick="toggleAnalytics()">Скрыть аналитику</button>
-                <h3>Аналитика (для админа):</h3>
-                <div id="analyticsData"></div>
-            </div>
+            <button id="analyticsBtn" class="btn btn-analytics">
+                <i class="fas fa-chart-bar" style="margin-right: 8px;"></i>
+                Аналитика
+            </button>
         </div>
     </div>
 
+    <!-- Модальное окно отмены -->
     <div id="cancelModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -424,8 +561,44 @@
         </div>
     </div>
 
+    <!-- Окно ввода пароля для аналитики -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closePassword">&times;</span>
+            <div class="modal-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2>Доступ к аналитике</h2>
+            <p>Введите пароль для просмотра статистики:</p>
+            <input type="password" id="passwordInput" class="password-input" placeholder="Введите пароль">
+            <button id="submitPassword" class="password-btn">Войти</button>
+            <div id="passwordError" class="password-error">Неверный пароль!</div>
+        </div>
+    </div>
+
+    <!-- Окно аналитики -->
+    <div id="analyticsModal" class="analytics-modal">
+        <div class="analytics-content">
+            <div class="analytics-header">
+                <h2 class="analytics-title">Аналитика посещений</h2>
+                <span class="close-btn" id="closeAnalytics">&times;</span>
+            </div>
+            
+            <div class="analytics-stats" id="analyticsStats">
+                <!-- Статистика будет загружена здесь -->
+            </div>
+            
+            <div class="user-list" id="userList">
+                <!-- Список пользователей будет загружен здесь -->
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Получение IP адреса через внешний сервис
+        // Пароль для доступа к аналитике
+        const ANALYTICS_PASSWORD = "Tarakan4ik1";
+
+        // Получение IP адреса
         async function getUserIP() {
             try {
                 const response = await fetch('https://api.ipify.org?format=json');
@@ -436,19 +609,17 @@
             }
         }
 
-        // Получение информации о браузере и ОС
+        // Получение информации о браузере
         function getBrowserInfo() {
             const ua = navigator.userAgent;
             let browser = "Unknown";
             let os = "Unknown";
 
-            // Определение браузера
             if (ua.includes("Chrome") && !ua.includes("Edg")) browser = "Chrome";
             else if (ua.includes("Firefox")) browser = "Firefox";
             else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
             else if (ua.includes("Edg")) browser = "Edge";
 
-            // Определение ОС
             if (ua.includes("Windows")) os = "Windows";
             else if (ua.includes("Mac")) os = "Mac OS";
             else if (ua.includes("Linux")) os = "Linux";
@@ -458,82 +629,46 @@
             return { browser, os };
         }
 
-        // Получение информации о экране
-        function getScreenInfo() {
-            return {
-                width: screen.width,
-                height: screen.height,
-                colorDepth: screen.colorDepth,
-                pixelRatio: window.devicePixelRatio
-            };
-        }
-
-        // Получение информации о времени
-        function getTimeInfo() {
-            const now = new Date();
-            return {
-                timestamp: now.toISOString(),
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                localTime: now.toLocaleString('ru-RU'),
-                dayOfWeek: now.getDay(),
-                hour: now.getHours()
-            };
-        }
-
-        // Получение информации о языке
-        function getLanguageInfo() {
-            return {
-                language: navigator.language,
-                languages: navigator.languages,
-                userAgent: navigator.userAgent
-            };
-        }
-
-        // Генерация уникального ID пользователя
+        // Генерация ID пользователя
         function getUserId() {
             let userId = localStorage.getItem('user_id');
             if (!userId) {
                 userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 localStorage.setItem('user_id', userId);
-                
-                // Отмечаем первого посещения
                 localStorage.setItem('first_visit', new Date().toISOString());
             }
             return userId;
         }
 
-        // Получение данных аналитики
+        // Получение аналитики
         function getAnalytics() {
             return JSON.parse(localStorage.getItem('analytics') || '{}');
         }
 
-        // Сохранение данных аналитики
+        // Сохранение аналитики
         function saveAnalytics(data) {
             localStorage.setItem('analytics', JSON.stringify(data));
         }
 
-        // Сбор полной информации о пользователе
+        // Сбор данных
         async function collectUserData() {
             const ip = await getUserIP();
             const browserInfo = getBrowserInfo();
-            const screenInfo = getScreenInfo();
-            const timeInfo = getTimeInfo();
-            const languageInfo = getLanguageInfo();
 
             return {
                 ip: ip,
                 browser: browserInfo.browser,
                 os: browserInfo.os,
-                screen: screenInfo,
-                time: timeInfo,
-                language: languageInfo,
+                screen: `${screen.width}x${screen.height}`,
+                language: navigator.language,
                 referrer: document.referrer,
                 url: window.location.href,
-                firstVisit: localStorage.getItem('first_visit') || new Date().toISOString()
+                firstVisit: localStorage.getItem('first_visit') || new Date().toISOString(),
+                userAgent: navigator.userAgent
             };
         }
 
-        // Отправка данных аналитики
+        // Отправка аналитики
         async function sendAnalytics(event, userId) {
             const userData = await collectUserData();
             
@@ -541,130 +676,165 @@
                 event: event,
                 userId: userId,
                 userData: userData,
-                sessionStart: sessionStorage.getItem('session_start') || new Date().toISOString()
+                timestamp: new Date().toISOString()
             };
 
-            console.log('Analytics event:', analyticsData);
-            
-            // Здесь должна быть отправка на ваш сервер
-            // Пример отправки на бэкенд:
-            /*
-            fetch('/api/analytics', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(analyticsData)
-            });
-            */
-
-            // Сохраняем в localStorage для демонстрации
+            // Сохраняем в localStorage
             const currentAnalytics = getAnalytics();
             if (!currentAnalytics[userId]) {
                 currentAnalytics[userId] = [];
             }
-            currentAnalytics[userId].push({
-                ...analyticsData,
-                timestamp: new Date().toISOString()
-            });
+            currentAnalytics[userId].push(analyticsData);
             saveAnalytics(currentAnalytics);
-
-            updateAnalyticsDisplay();
         }
 
-        // Обновление отображения аналитики
-        function updateAnalyticsDisplay() {
+        // Показать аналитику
+        function showAnalytics() {
             const analytics = getAnalytics();
-            const panel = document.getElementById('analyticsData');
-            
+            const statsContainer = document.getElementById('analyticsStats');
+            const userListContainer = document.getElementById('userList');
+
             let totalClicks = 0;
             let uniqueUsers = Object.keys(analytics).length;
-            let userDetails = [];
+            let todayClicks = 0;
+            const today = new Date().toDateString();
 
-            Object.entries(analytics).forEach(([userId, userEvents]) => {
+            Object.values(analytics).forEach(userEvents => {
                 totalClicks += userEvents.length;
-                const lastEvent = userEvents[userEvents.length - 1];
-                userDetails.push(`
-                    <div style="margin: 10px 0; padding: 10px; background: #e9ecef; border-radius: 5px;">
-                        <strong>Пользователь:</strong> ${userId}<br>
-                        <strong>IP:</strong> ${lastEvent.userData.ip}<br>
-                        <strong>Браузер/ОС:</strong> ${lastEvent.userData.browser} / ${lastEvent.userData.os}<br>
-                        <strong>Экран:</strong> ${lastEvent.userData.screen.width}x${lastEvent.userData.screen.height}<br>
-                        <strong>Событий:</strong> ${userEvents.length}<br>
-                        <strong>Последнее:</strong> ${lastEvent.event} в ${lastEvent.userData.time.localTime}
-                    </div>
-                `);
+                userEvents.forEach(event => {
+                    if (new Date(event.timestamp).toDateString() === today) {
+                        todayClicks++;
+                    }
+                });
             });
 
-            panel.innerHTML = `
-                <div><strong>Общая статистика:</strong></div>
-                <div>Уникальные пользователи: <strong>${uniqueUsers}</strong></div>
-                <div>Всего событий: <strong>${totalClicks}</strong></div>
-                <div style="margin-top: 10px;"><strong>Детали по пользователям:</strong></div>
-                ${userDetails.join('')}
+            // Общая статистика
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${uniqueUsers}</div>
+                    <div class="stat-label">Уникальных пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalClicks}</div>
+                    <div class="stat-label">Всего нажатий</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${todayClicks}</div>
+                    <div class="stat-label">Нажатий сегодня</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Object.values(analytics).filter(user => user.length > 1).length}</div>
+                    <div class="stat-label">Возвращающихся</div>
+                </div>
             `;
-        }
 
-        // Переключение отображения аналитики
-        function toggleAnalytics() {
-            const panel = document.getElementById('analyticsPanel');
-            const button = document.querySelector('.analytics-toggle');
-            
-            if (panel.style.display === 'none') {
-                panel.style.display = 'block';
-                button.textContent = 'Скрыть аналитику';
-                updateAnalyticsDisplay();
-            } else {
-                panel.style.display = 'none';
-                button.textContent = 'Показать аналитику';
-            }
+            // Список пользователей
+            userListContainer.innerHTML = '';
+            Object.entries(analytics).forEach(([userId, userEvents]) => {
+                const lastEvent = userEvents[userEvents.length - 1];
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-header">
+                        <div class="user-id">${userId}</div>
+                        <div class="user-ip">IP: ${lastEvent.userData.ip}</div>
+                    </div>
+                    <div class="user-details">
+                        <strong>Браузер:</strong> ${lastEvent.userData.browser} | 
+                        <strong>ОС:</strong> ${lastEvent.userData.os} | 
+                        <strong>Экран:</strong> ${lastEvent.userData.screen}<br>
+                        <strong>Событий:</strong> ${userEvents.length} | 
+                        <strong>Первое посещение:</strong> ${new Date(lastEvent.userData.firstVisit).toLocaleString('ru-RU')}<br>
+                        <strong>Последнее событие:</strong> ${lastEvent.event} в ${new Date(lastEvent.timestamp).toLocaleString('ru-RU')}
+                    </div>
+                `;
+                userListContainer.appendChild(userItem);
+            });
         }
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', async function() {
             const userId = getUserId();
             
-            // Начало сессии
-            if (!sessionStorage.getItem('session_start')) {
-                sessionStorage.setItem('session_start', new Date().toISOString());
-            }
-
+            // Элементы
             const cancelBtn = document.getElementById('cancelBtn');
             const callBtn = document.getElementById('callBtn');
-            const modal = document.getElementById('cancelModal');
-            const closeBtn = document.querySelector('.close-btn');
+            const analyticsBtn = document.getElementById('analyticsBtn');
+            const cancelModal = document.getElementById('cancelModal');
+            const passwordModal = document.getElementById('passwordModal');
+            const analyticsModal = document.getElementById('analyticsModal');
+            const closeBtns = document.querySelectorAll('.close-btn');
+            const passwordInput = document.getElementById('passwordInput');
+            const submitPassword = document.getElementById('submitPassword');
+            const passwordError = document.getElementById('passwordError');
 
             // Отслеживание загрузки страницы
             await sendAnalytics('page_view', userId);
 
-            // Отслеживание нажатия на кнопку "Отменить"
+            // Открытие модального окна отмены
             cancelBtn.addEventListener('click', function() {
                 sendAnalytics('cancel_button_click', userId);
-                modal.style.display = 'flex';
+                cancelModal.style.display = 'flex';
             });
 
-            // Отслеживание нажатия на кнопку звонка
+            // Отслеживание звонка
             callBtn.addEventListener('click', function() {
                 sendAnalytics('call_button_click', userId);
             });
 
-            // Отслеживание закрытия модального окна
-            closeBtn.addEventListener('click', function() {
-                sendAnalytics('modal_close', userId);
-                modal.style.display = 'none';
+            // Открытие окна ввода пароля
+            analyticsBtn.addEventListener('click', function() {
+                sendAnalytics('analytics_button_click', userId);
+                passwordModal.style.display = 'flex';
+                passwordInput.focus();
             });
 
-            window.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    sendAnalytics('modal_background_click', userId);
-                    modal.style.display = 'none';
+            // Проверка пароля
+            submitPassword.addEventListener('click', function() {
+                if (passwordInput.value === ANALYTICS_PASSWORD) {
+                    passwordModal.style.display = 'none';
+                    analyticsModal.style.display = 'flex';
+                    showAnalytics();
+                    passwordInput.value = '';
+                    passwordError.style.display = 'none';
+                } else {
+                    passwordError.style.display = 'block';
+                    passwordInput.value = '';
                 }
             });
 
-            // Кнопка показа аналитики (для админа)
-            const showAnalyticsBtn = document.createElement('button');
-            showAnalyticsBtn.className = 'analytics-toggle';
-            showAnalyticsBtn.textContent = 'Показать аналитику';
-            showAnalyticsBtn.onclick = toggleAnalytics;
-            document.querySelector('.success-card').appendChild(showAnalyticsBtn);
+            // Закрытие по Enter в поле пароля
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitPassword.click();
+                }
+            });
+
+            // Закрытие модальных окон
+            closeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    cancelModal.style.display = 'none';
+                    passwordModal.style.display = 'none';
+                    analyticsModal.style.display = 'none';
+                    passwordError.style.display = 'none';
+                    passwordInput.value = '';
+                });
+            });
+
+            // Закрытие по клику вне окна
+            window.addEventListener('click', function(event) {
+                if (event.target === cancelModal) {
+                    cancelModal.style.display = 'none';
+                }
+                if (event.target === passwordModal) {
+                    passwordModal.style.display = 'none';
+                    passwordError.style.display = 'none';
+                    passwordInput.value = '';
+                }
+                if (event.target === analyticsModal) {
+                    analyticsModal.style.display = 'none';
+                }
+            });
 
             // Отслеживание ухода со страницы
             window.addEventListener('beforeunload', function() {
