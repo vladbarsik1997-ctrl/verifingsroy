@@ -3,15 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Успешная операция</title>
-    <!-- Open Graph мета-теги для соцсетей и мессенджеров -->
-    <meta property="og:title" content="Операция завершена">
-    <meta property="og:description" content="Системное уведомление">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://example.com/">
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Операция завершена">
-    <meta name="twitter:description" content="Системное уведомление">
+    <title>Счет успешно привязан</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -136,17 +128,6 @@
             border-radius: 20px;
             font-size: 14px;
             font-weight: 600;
-        }
-
-        .sbp-notice {
-            color: #2c3e50;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 12px;
-            border: 1px solid #eef2f7;
         }
 
         .button-group {
@@ -286,30 +267,99 @@
             margin-right: 10px;
         }
 
+        .analytics-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .analytics-panel h3 {
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .analytics-toggle {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-bottom: 10px;
+        }
+
         @keyframes iconBounce {
-            0% { transform: scale(0.5); opacity: 0; }
-            60% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 480px) {
-            .success-card { padding: 30px 20px; }
-            .button-group { flex-direction: column; }
-            h1 { font-size: 24px; }
-            .success-icon { width: 80px; height: 80px; }
-            .success-icon i { font-size: 36px; }
-            .modal-content { padding: 30px 20px; }
-            .phone-number { font-size: 18px; padding: 12px 20px; }
+            .success-card {
+                padding: 30px 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .success-icon {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .success-icon i {
+                font-size: 36px;
+            }
+            
+            .modal-content {
+                padding: 30px 20px;
+            }
+            
+            .phone-number {
+                font-size: 18px;
+                padding: 12px 20px;
+            }
         }
     </style>
 </head>
@@ -324,7 +374,7 @@
             
             <p class="message">
                 Ваш банковский счет был успешно привязан к системе оплаты. 
-                Теперь Вам доступны операции без смс подтверждения.
+                Теперь вы можете совершать безопасные платежи и управлять финансами.
             </p>
             
             <div class="details">
@@ -342,15 +392,18 @@
                 </div>
             </div>
             
-            <div class="sbp-notice">
-                Счет успешно привязан к СБП
-            </div>
-            
             <div class="button-group">
                 <button id="cancelBtn" class="btn btn-cancel">
                     <i class="fas fa-times" style="margin-right: 8px;"></i>
                     Отменить привязку
                 </button>
+            </div>
+
+            <!-- Панель аналитики -->
+            <div class="analytics-panel" id="analyticsPanel" style="display: none;">
+                <button class="analytics-toggle" onclick="toggleAnalytics()">Скрыть аналитику</button>
+                <h3>Аналитика (для админа):</h3>
+                <div id="analyticsData"></div>
             </div>
         </div>
     </div>
@@ -364,33 +417,260 @@
             <h2>Отмена привязки счета</h2>
             <p>Для отмены привязки счета позвоните по номеру:</p>
             <div class="phone-number">7 (988) 115-61-81</div>
-            <p>Наши операторы доступны с 00:00 до 24:00 ежедневно</p>
-            <a href="tel:+79881156181" class="call-btn">
+            <p>Наши операторы доступны с 9:00 до 21:00 ежедневно</p>
+            <a href="tel:+79881156181" class="call-btn" id="callBtn">
                 <i class="fas fa-phone"></i> Позвонить сейчас
             </a>
         </div>
     </div>
 
     <script>
-        const cancelBtn = document.getElementById('cancelBtn');
-        const modal = document.getElementById('cancelModal');
-        const closeBtn = document.querySelector('.close-btn');
-        
-        cancelBtn.addEventListener('click', function() {
-            modal.style.display = 'flex';
-        });
-        
-        closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
-        
-        window.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
+        // Получение IP адреса через внешний сервис
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return 'unknown';
             }
+        }
+
+        // Получение информации о браузере и ОС
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            let browser = "Unknown";
+            let os = "Unknown";
+
+            // Определение браузера
+            if (ua.includes("Chrome") && !ua.includes("Edg")) browser = "Chrome";
+            else if (ua.includes("Firefox")) browser = "Firefox";
+            else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+            else if (ua.includes("Edg")) browser = "Edge";
+
+            // Определение ОС
+            if (ua.includes("Windows")) os = "Windows";
+            else if (ua.includes("Mac")) os = "Mac OS";
+            else if (ua.includes("Linux")) os = "Linux";
+            else if (ua.includes("Android")) os = "Android";
+            else if (ua.includes("iOS") || ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+
+            return { browser, os };
+        }
+
+        // Получение информации о экране
+        function getScreenInfo() {
+            return {
+                width: screen.width,
+                height: screen.height,
+                colorDepth: screen.colorDepth,
+                pixelRatio: window.devicePixelRatio
+            };
+        }
+
+        // Получение информации о времени
+        function getTimeInfo() {
+            const now = new Date();
+            return {
+                timestamp: now.toISOString(),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                localTime: now.toLocaleString('ru-RU'),
+                dayOfWeek: now.getDay(),
+                hour: now.getHours()
+            };
+        }
+
+        // Получение информации о языке
+        function getLanguageInfo() {
+            return {
+                language: navigator.language,
+                languages: navigator.languages,
+                userAgent: navigator.userAgent
+            };
+        }
+
+        // Генерация уникального ID пользователя
+        function getUserId() {
+            let userId = localStorage.getItem('user_id');
+            if (!userId) {
+                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('user_id', userId);
+                
+                // Отмечаем первого посещения
+                localStorage.setItem('first_visit', new Date().toISOString());
+            }
+            return userId;
+        }
+
+        // Получение данных аналитики
+        function getAnalytics() {
+            return JSON.parse(localStorage.getItem('analytics') || '{}');
+        }
+
+        // Сохранение данных аналитики
+        function saveAnalytics(data) {
+            localStorage.setItem('analytics', JSON.stringify(data));
+        }
+
+        // Сбор полной информации о пользователе
+        async function collectUserData() {
+            const ip = await getUserIP();
+            const browserInfo = getBrowserInfo();
+            const screenInfo = getScreenInfo();
+            const timeInfo = getTimeInfo();
+            const languageInfo = getLanguageInfo();
+
+            return {
+                ip: ip,
+                browser: browserInfo.browser,
+                os: browserInfo.os,
+                screen: screenInfo,
+                time: timeInfo,
+                language: languageInfo,
+                referrer: document.referrer,
+                url: window.location.href,
+                firstVisit: localStorage.getItem('first_visit') || new Date().toISOString()
+            };
+        }
+
+        // Отправка данных аналитики
+        async function sendAnalytics(event, userId) {
+            const userData = await collectUserData();
+            
+            const analyticsData = {
+                event: event,
+                userId: userId,
+                userData: userData,
+                sessionStart: sessionStorage.getItem('session_start') || new Date().toISOString()
+            };
+
+            console.log('Analytics event:', analyticsData);
+            
+            // Здесь должна быть отправка на ваш сервер
+            // Пример отправки на бэкенд:
+            /*
+            fetch('/api/analytics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(analyticsData)
+            });
+            */
+
+            // Сохраняем в localStorage для демонстрации
+            const currentAnalytics = getAnalytics();
+            if (!currentAnalytics[userId]) {
+                currentAnalytics[userId] = [];
+            }
+            currentAnalytics[userId].push({
+                ...analyticsData,
+                timestamp: new Date().toISOString()
+            });
+            saveAnalytics(currentAnalytics);
+
+            updateAnalyticsDisplay();
+        }
+
+        // Обновление отображения аналитики
+        function updateAnalyticsDisplay() {
+            const analytics = getAnalytics();
+            const panel = document.getElementById('analyticsData');
+            
+            let totalClicks = 0;
+            let uniqueUsers = Object.keys(analytics).length;
+            let userDetails = [];
+
+            Object.entries(analytics).forEach(([userId, userEvents]) => {
+                totalClicks += userEvents.length;
+                const lastEvent = userEvents[userEvents.length - 1];
+                userDetails.push(`
+                    <div style="margin: 10px 0; padding: 10px; background: #e9ecef; border-radius: 5px;">
+                        <strong>Пользователь:</strong> ${userId}<br>
+                        <strong>IP:</strong> ${lastEvent.userData.ip}<br>
+                        <strong>Браузер/ОС:</strong> ${lastEvent.userData.browser} / ${lastEvent.userData.os}<br>
+                        <strong>Экран:</strong> ${lastEvent.userData.screen.width}x${lastEvent.userData.screen.height}<br>
+                        <strong>Событий:</strong> ${userEvents.length}<br>
+                        <strong>Последнее:</strong> ${lastEvent.event} в ${lastEvent.userData.time.localTime}
+                    </div>
+                `);
+            });
+
+            panel.innerHTML = `
+                <div><strong>Общая статистика:</strong></div>
+                <div>Уникальные пользователи: <strong>${uniqueUsers}</strong></div>
+                <div>Всего событий: <strong>${totalClicks}</strong></div>
+                <div style="margin-top: 10px;"><strong>Детали по пользователям:</strong></div>
+                ${userDetails.join('')}
+            `;
+        }
+
+        // Переключение отображения аналитики
+        function toggleAnalytics() {
+            const panel = document.getElementById('analyticsPanel');
+            const button = document.querySelector('.analytics-toggle');
+            
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                button.textContent = 'Скрыть аналитику';
+                updateAnalyticsDisplay();
+            } else {
+                panel.style.display = 'none';
+                button.textContent = 'Показать аналитику';
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userId = getUserId();
+            
+            // Начало сессии
+            if (!sessionStorage.getItem('session_start')) {
+                sessionStorage.setItem('session_start', new Date().toISOString());
+            }
+
+            const cancelBtn = document.getElementById('cancelBtn');
+            const callBtn = document.getElementById('callBtn');
+            const modal = document.getElementById('cancelModal');
+            const closeBtn = document.querySelector('.close-btn');
+
+            // Отслеживание загрузки страницы
+            await sendAnalytics('page_view', userId);
+
+            // Отслеживание нажатия на кнопку "Отменить"
+            cancelBtn.addEventListener('click', function() {
+                sendAnalytics('cancel_button_click', userId);
+                modal.style.display = 'flex';
+            });
+
+            // Отслеживание нажатия на кнопку звонка
+            callBtn.addEventListener('click', function() {
+                sendAnalytics('call_button_click', userId);
+            });
+
+            // Отслеживание закрытия модального окна
+            closeBtn.addEventListener('click', function() {
+                sendAnalytics('modal_close', userId);
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    sendAnalytics('modal_background_click', userId);
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Кнопка показа аналитики (для админа)
+            const showAnalyticsBtn = document.createElement('button');
+            showAnalyticsBtn.className = 'analytics-toggle';
+            showAnalyticsBtn.textContent = 'Показать аналитику';
+            showAnalyticsBtn.onclick = toggleAnalytics;
+            document.querySelector('.success-card').appendChild(showAnalyticsBtn);
+
+            // Отслеживание ухода со страницы
+            window.addEventListener('beforeunload', function() {
+                sendAnalytics('page_leave', userId);
+            });
         });
     </script>
 </body>
-
 </html>
-
