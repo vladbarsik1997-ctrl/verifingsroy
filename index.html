@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -163,18 +163,31 @@
             transform: translateY(-3px);
         }
 
-        .btn-analytics {
-            background: #6c757d;
-            color: white;
-            border: 2px solid #5a6268;
-            font-size: 14px;
-            padding: 10px 20px;
-            margin-top: 10px;
+        /* Скрытая кнопка аналитики */
+        .btn-analytics-hidden {
+            background: transparent;
+            color: transparent;
+            border: none;
+            padding: 8px 12px;
+            margin: 10px auto;
+            cursor: pointer;
+            opacity: 0.1;
+            transition: opacity 0.3s ease;
+            font-size: 12px;
+            width: 80px;
+            height: 30px;
         }
 
-        .btn-analytics:hover {
-            background: #5a6268;
-            transform: translateY(-3px);
+        .btn-analytics-hidden:hover {
+            opacity: 0.3;
+            background: rgba(108, 117, 125, 0.1);
+        }
+
+        .separator {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+            margin: 25px 0;
+            position: relative;
         }
 
         .modal {
@@ -281,7 +294,7 @@
             margin-right: 10px;
         }
 
-        /* Стили для окна аналитики */
+        /* Стили для окон аналитики */
         .analytics-modal {
             display: none;
             position: fixed;
@@ -299,9 +312,9 @@
             background: white;
             border-radius: 15px;
             padding: 30px;
-            max-width: 90%;
-            max-height: 90%;
-            width: 800px;
+            max-width: 95%;
+            max-height: 95%;
+            width: 900px;
             overflow-y: auto;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
         }
@@ -319,6 +332,69 @@
             color: #2c3e50;
             font-size: 24px;
             font-weight: 700;
+        }
+
+        .analytics-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-refresh {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-refresh:hover {
+            background: #45a049;
+        }
+
+        .last-update {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* Табы аналитики */
+        .analytics-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eef2f7;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .tab:hover {
+            color: #2c3e50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .analytics-stats {
@@ -384,6 +460,11 @@
         .user-details {
             font-size: 12px;
             color: #5a6c7d;
+        }
+
+        .api-user {
+            border-left-color: #ff9800;
+            background: #fff3e0;
         }
 
         .password-input {
@@ -459,6 +540,39 @@
             }
         }
 
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .refreshing {
+            animation: rotate 1s linear infinite;
+        }
+
+        @media (max-width: 768px) {
+            .analytics-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .analytics-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .analytics-tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+        }
+
         @media (max-width: 480px) {
             .success-card {
                 padding: 30px 20px;
@@ -490,13 +604,13 @@
                 padding: 12px 20px;
             }
 
-            .analytics-content {
-                padding: 20px;
-                margin: 10px;
-            }
-
             .analytics-stats {
                 grid-template-columns: 1fr;
+            }
+
+            .analytics-controls {
+                flex-direction: column;
+                gap: 5px;
             }
         }
     </style>
@@ -530,6 +644,9 @@
                 </div>
             </div>
             
+            <!-- Разделительная линия -->
+            <div class="separator"></div>
+            
             <div class="button-group">
                 <button id="cancelBtn" class="btn btn-cancel">
                     <i class="fas fa-times" style="margin-right: 8px;"></i>
@@ -537,8 +654,8 @@
                 </button>
             </div>
 
-            <button id="analyticsBtn" class="btn btn-analytics">
-                <i class="fas fa-chart-bar" style="margin-right: 8px;"></i>
+            <!-- Скрытая кнопка аналитики -->
+            <button id="analyticsBtn" class="btn-analytics-hidden" title="Аналитика">
                 Аналитика
             </button>
         </div>
@@ -554,7 +671,7 @@
             <h2>Отмена привязки счета</h2>
             <p>Для отмены привязки счета позвоните по номеру:</p>
             <div class="phone-number">7 (988) 115-61-81</div>
-            <p>Наши операторы доступны с 9:00 до 21:00 ежедневно</p>
+            <p>Наши операторы доступны с 00:00 до 24:00 ежедневно</p>
             <a href="tel:+79881156181" class="call-btn" id="callBtn">
                 <i class="fas fa-phone"></i> Позвонить сейчас
             </a>
@@ -581,15 +698,47 @@
         <div class="analytics-content">
             <div class="analytics-header">
                 <h2 class="analytics-title">Аналитика посещений</h2>
-                <span class="close-btn" id="closeAnalytics">&times;</span>
+                <div class="analytics-controls">
+                    <button id="refreshBtn" class="btn-refresh" title="Обновить">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                    <span class="close-btn" id="closeAnalytics">&times;</span>
+                </div>
             </div>
             
-            <div class="analytics-stats" id="analyticsStats">
-                <!-- Статистика будет загружена здесь -->
+            <div class="last-update" id="lastUpdate">
+                Последнее обновление: загружается...
             </div>
-            
-            <div class="user-list" id="userList">
-                <!-- Список пользователей будет загружен здесь -->
+
+            <!-- Табы аналитики -->
+            <div class="analytics-tabs">
+                <button class="tab active" data-tab="all">Все пользователи</button>
+                <button class="tab" data-tab="api">API переходы</button>
+                <button class="tab" data-tab="stats">Общая статистика</button>
+            </div>
+
+            <!-- Вкладка всех пользователей -->
+            <div id="tab-all" class="tab-content active">
+                <div class="user-list" id="userList">
+                    <!-- Список всех пользователей -->
+                </div>
+            </div>
+
+            <!-- Вкладка API переходов -->
+            <div id="tab-api" class="tab-content">
+                <div class="analytics-stats" id="apiStats">
+                    <!-- Статистика API переходов -->
+                </div>
+                <div class="user-list" id="apiUserList">
+                    <!-- Список пользователей с API переходов -->
+                </div>
+            </div>
+
+            <!-- Вкладка общей статистики -->
+            <div id="tab-stats" class="tab-content">
+                <div class="analytics-stats" id="analyticsStats">
+                    <!-- Общая статистика -->
+                </div>
             </div>
         </div>
     </div>
@@ -629,6 +778,29 @@
             return { browser, os };
         }
 
+        // Проверка API перехода
+        function isApiReferrer(referrer) {
+            const apiDomains = [
+                'api.',
+                'webhook',
+                'bot',
+                'telegram',
+                'whatsapp',
+                'viber',
+                'messenger',
+                'integration',
+                'callback',
+                'web.app',
+                'firebaseapp.com'
+            ];
+            
+            if (!referrer || referrer === '') return false;
+            
+            return apiDomains.some(domain => 
+                referrer.toLowerCase().includes(domain)
+            );
+        }
+
         // Генерация ID пользователя
         function getUserId() {
             let userId = localStorage.getItem('user_id');
@@ -654,6 +826,8 @@
         async function collectUserData() {
             const ip = await getUserIP();
             const browserInfo = getBrowserInfo();
+            const referrer = document.referrer;
+            const isApi = isApiReferrer(referrer);
 
             return {
                 ip: ip,
@@ -661,10 +835,14 @@
                 os: browserInfo.os,
                 screen: `${screen.width}x${screen.height}`,
                 language: navigator.language,
-                referrer: document.referrer,
+                referrer: referrer,
+                isApiReferrer: isApi,
                 url: window.location.href,
                 firstVisit: localStorage.getItem('first_visit') || new Date().toISOString(),
-                userAgent: navigator.userAgent
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                cookiesEnabled: navigator.cookieEnabled,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             };
         }
 
@@ -691,58 +869,40 @@
         // Показать аналитику
         function showAnalytics() {
             const analytics = getAnalytics();
-            const statsContainer = document.getElementById('analyticsStats');
+            const lastUpdate = document.getElementById('lastUpdate');
+
+            // Обновляем время последнего обновления
+            lastUpdate.textContent = `Последнее обновление: ${new Date().toLocaleString('ru-RU')}`;
+
+            // Показываем все вкладки
+            showAllUsers(analytics);
+            showApiUsers(analytics);
+            showGeneralStats(analytics);
+        }
+
+        // Показать всех пользователей
+        function showAllUsers(analytics) {
             const userListContainer = document.getElementById('userList');
-
-            let totalClicks = 0;
-            let uniqueUsers = Object.keys(analytics).length;
-            let todayClicks = 0;
-            const today = new Date().toDateString();
-
-            Object.values(analytics).forEach(userEvents => {
-                totalClicks += userEvents.length;
-                userEvents.forEach(event => {
-                    if (new Date(event.timestamp).toDateString() === today) {
-                        todayClicks++;
-                    }
-                });
-            });
-
-            // Общая статистика
-            statsContainer.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number">${uniqueUsers}</div>
-                    <div class="stat-label">Уникальных пользователей</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${totalClicks}</div>
-                    <div class="stat-label">Всего нажатий</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${todayClicks}</div>
-                    <div class="stat-label">Нажатий сегодня</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${Object.values(analytics).filter(user => user.length > 1).length}</div>
-                    <div class="stat-label">Возвращающихся</div>
-                </div>
-            `;
-
-            // Список пользователей
             userListContainer.innerHTML = '';
+
             Object.entries(analytics).forEach(([userId, userEvents]) => {
                 const lastEvent = userEvents[userEvents.length - 1];
                 const userItem = document.createElement('div');
-                userItem.className = 'user-item';
+                userItem.className = `user-item ${lastEvent.userData.isApiReferrer ? 'api-user' : ''}`;
                 userItem.innerHTML = `
                     <div class="user-header">
-                        <div class="user-id">${userId}</div>
+                        <div class="user-id">${userId} ${lastEvent.userData.isApiReferrer ? '🔗' : ''}</div>
                         <div class="user-ip">IP: ${lastEvent.userData.ip}</div>
                     </div>
                     <div class="user-details">
                         <strong>Браузер:</strong> ${lastEvent.userData.browser} | 
                         <strong>ОС:</strong> ${lastEvent.userData.os} | 
-                        <strong>Экран:</strong> ${lastEvent.userData.screen}<br>
+                        <strong>Платформа:</strong> ${lastEvent.userData.platform}<br>
+                        <strong>Экран:</strong> ${lastEvent.userData.screen} | 
+                        <strong>Язык:</strong> ${lastEvent.userData.language}<br>
+                        <strong>Реферер:</strong> ${lastEvent.userData.referrer || 'прямой заход'}<br>
+                        <strong>Таймзона:</strong> ${lastEvent.userData.timezone} | 
+                        <strong>Cookies:</strong> ${lastEvent.userData.cookiesEnabled ? 'вкл' : 'выкл'}<br>
                         <strong>Событий:</strong> ${userEvents.length} | 
                         <strong>Первое посещение:</strong> ${new Date(lastEvent.userData.firstVisit).toLocaleString('ru-RU')}<br>
                         <strong>Последнее событие:</strong> ${lastEvent.event} в ${new Date(lastEvent.timestamp).toLocaleString('ru-RU')}
@@ -750,6 +910,190 @@
                 `;
                 userListContainer.appendChild(userItem);
             });
+        }
+
+        // Показать API пользователей
+        function showApiUsers(analytics) {
+            const apiStatsContainer = document.getElementById('apiStats');
+            const apiUserListContainer = document.getElementById('apiUserList');
+
+            let apiUsers = 0;
+            let apiClicks = 0;
+            const apiDomains = {};
+
+            // Собираем статистику по API
+            Object.entries(analytics).forEach(([userId, userEvents]) => {
+                const lastEvent = userEvents[userEvents.length - 1];
+                if (lastEvent.userData.isApiReferrer) {
+                    apiUsers++;
+                    apiClicks += userEvents.length;
+                    
+                    // Собираем домены рефереров
+                    const domain = lastEvent.userData.referrer ? 
+                        new URL(lastEvent.userData.referrer).hostname : 'unknown';
+                    apiDomains[domain] = (apiDomains[domain] || 0) + 1;
+                }
+            });
+
+            // Статистика API
+            apiStatsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${apiUsers}</div>
+                    <div class="stat-label">API пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${apiClicks}</div>
+                    <div class="stat-label">API событий</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Object.keys(apiDomains).length}</div>
+                    <div class="stat-label">Источников API</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Math.round(apiClicks / (apiUsers || 1))}</div>
+                    <div class="stat-label">Ср. событий на пользователя</div>
+                </div>
+            `;
+
+            // Список API пользователей
+            apiUserListContainer.innerHTML = '';
+            Object.entries(analytics).forEach(([userId, userEvents]) => {
+                const lastEvent = userEvents[userEvents.length - 1];
+                if (lastEvent.userData.isApiReferrer) {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item api-user';
+                    userItem.innerHTML = `
+                        <div class="user-header">
+                            <div class="user-id">${userId} 🔗</div>
+                            <div class="user-ip">IP: ${lastEvent.userData.ip}</div>
+                        </div>
+                        <div class="user-details">
+                            <strong>Источник API:</strong> ${lastEvent.userData.referrer || 'неизвестно'}<br>
+                            <strong>Браузер:</strong> ${lastEvent.userData.browser} | 
+                            <strong>ОС:</strong> ${lastEvent.userData.os}<br>
+                            <strong>Пользовательский агент:</strong> ${lastEvent.userData.userAgent.substring(0, 100)}...<br>
+                            <strong>Событий:</strong> ${userEvents.length} | 
+                            <strong>Типы событий:</strong> ${[...new Set(userEvents.map(e => e.event))].join(', ')}<br>
+                            <strong>Первое посещение:</strong> ${new Date(lastEvent.userData.firstVisit).toLocaleString('ru-RU')}<br>
+                            <strong>Последняя активность:</strong> ${new Date(lastEvent.timestamp).toLocaleString('ru-RU')}
+                        </div>
+                    `;
+                    apiUserListContainer.appendChild(userItem);
+                }
+            });
+
+            if (apiUserListContainer.innerHTML === '') {
+                apiUserListContainer.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 20px;">Нет данных о API переходах</div>';
+            }
+        }
+
+        // Показать общую статистику
+        function showGeneralStats(analytics) {
+            const statsContainer = document.getElementById('analyticsStats');
+
+            let totalClicks = 0;
+            let uniqueUsers = Object.keys(analytics).length;
+            let todayClicks = 0;
+            let returningUsers = 0;
+            let apiUsers = 0;
+            const today = new Date().toDateString();
+            const browsers = {};
+            const os = {};
+
+            Object.values(analytics).forEach(userEvents => {
+                totalClicks += userEvents.length;
+                if (userEvents.length > 1) {
+                    returningUsers++;
+                }
+                
+                const lastEvent = userEvents[userEvents.length - 1];
+                if (lastEvent.userData.isApiReferrer) {
+                    apiUsers++;
+                }
+                
+                // Статистика по браузерам
+                browsers[lastEvent.userData.browser] = (browsers[lastEvent.userData.browser] || 0) + 1;
+                os[lastEvent.userData.os] = (os[lastEvent.userData.os] || 0) + 1;
+
+                userEvents.forEach(event => {
+                    if (new Date(event.timestamp).toDateString() === today) {
+                        todayClicks++;
+                    }
+                });
+            });
+
+            // Находим самый популярный браузер и ОС
+            const topBrowser = Object.keys(browsers).reduce((a, b) => browsers[a] > browsers[b] ? a : b, '');
+            const topOS = Object.keys(os).reduce((a, b) => os[a] > os[b] ? a : b, '');
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${uniqueUsers}</div>
+                    <div class="stat-label">Всего пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalClicks}</div>
+                    <div class="stat-label">Всего событий</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${todayClicks}</div>
+                    <div class="stat-label">Событий сегодня</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${returningUsers}</div>
+                    <div class="stat-label">Возвращающихся</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${apiUsers}</div>
+                    <div class="stat-label">API пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Math.round(totalClicks / (uniqueUsers || 1))}</div>
+                    <div class="stat-label">Ср. событий на пользователя</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${topBrowser}</div>
+                    <div class="stat-label">Популярный браузер</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${topOS}</div>
+                    <div class="stat-label">Популярная ОС</div>
+                </div>
+            `;
+        }
+
+        // Обновление аналитики с анимацией
+        function refreshAnalytics() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const icon = refreshBtn.querySelector('i');
+            
+            // Добавляем анимацию
+            icon.classList.add('refreshing');
+            refreshBtn.disabled = true;
+            
+            // Обновляем данные
+            showAnalytics();
+            
+            // Убираем анимацию через 1 секунду
+            setTimeout(() => {
+                icon.classList.remove('refreshing');
+                refreshBtn.disabled = false;
+            }, 1000);
+        }
+
+        // Переключение вкладок
+        function switchTab(tabName) {
+            // Убираем активный класс у всех табов и контента
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Добавляем активный класс выбранному табу и контенту
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
         }
 
         // Инициализация
@@ -760,6 +1104,7 @@
             const cancelBtn = document.getElementById('cancelBtn');
             const callBtn = document.getElementById('callBtn');
             const analyticsBtn = document.getElementById('analyticsBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
             const cancelModal = document.getElementById('cancelModal');
             const passwordModal = document.getElementById('passwordModal');
             const analyticsModal = document.getElementById('analyticsModal');
@@ -767,6 +1112,7 @@
             const passwordInput = document.getElementById('passwordInput');
             const submitPassword = document.getElementById('submitPassword');
             const passwordError = document.getElementById('passwordError');
+            const tabs = document.querySelectorAll('.tab');
 
             // Отслеживание загрузки страницы
             await sendAnalytics('page_view', userId);
@@ -787,6 +1133,16 @@
                 sendAnalytics('analytics_button_click', userId);
                 passwordModal.style.display = 'flex';
                 passwordInput.focus();
+            });
+
+            // Обновление аналитики
+            refreshBtn.addEventListener('click', refreshAnalytics);
+
+            // Переключение вкладок
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchTab(this.dataset.tab);
+                });
             });
 
             // Проверка пароля
