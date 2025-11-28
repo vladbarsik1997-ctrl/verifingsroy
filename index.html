@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор уведомлений безопасности</title>
+    <title>Генератор уведомлений</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,90 +14,52 @@
         }
 
         body {
-            background: linear-gradient(135deg, #8B0000 0%, #450000 50%, #2c0000 100%);
+            background: linear-gradient(135deg, #8B0000 0%, #2c0000 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            animation: bgPanic 3s infinite alternate;
-        }
-
-        @keyframes bgPanic {
-            0% { background: linear-gradient(135deg, #8B0000 0%, #450000 50%, #2c0000 100%); }
-            100% { background: linear-gradient(135deg, #A00000 0%, #550000 50%, #3c0000 100%); }
         }
 
         .container {
-            max-width: 800px;
+            max-width: 500px;
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
         }
 
         .card {
             background: #1a1a1a;
             border-radius: 16px;
-            padding: 40px 35px;
-            box-shadow: 0 15px 35px rgba(255, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-            border: 3px solid #ff0000;
-            animation: borderPulse 2s infinite;
-        }
-
-        @keyframes borderPulse {
-            0%, 100% { border-color: #ff0000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
-            50% { border-color: #ff4444; box-shadow: 0 0 30px rgba(255, 0, 0, 0.8); }
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(to right, #ff0000, #ff6b6b, #ff0000);
-            animation: scanLine 2s linear infinite;
-        }
-
-        @keyframes scanLine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.4);
+            border: 2px solid #ff0000;
         }
 
         h1 {
             color: #ff0000;
-            margin-bottom: 25px;
-            font-size: 32px;
-            font-weight: 900;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 700;
             text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #ff6b6b;
             font-weight: 600;
-            font-size: 16px;
         }
 
         input {
             width: 100%;
-            padding: 16px 20px;
+            padding: 14px;
             border: 2px solid #8B0000;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 16px;
-            transition: all 0.3s;
             background: #2a2a2a;
             color: white;
         }
@@ -105,68 +67,43 @@
         input:focus {
             outline: none;
             border-color: #ff0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-            transform: translateY(-2px);
         }
 
         .btn {
-            padding: 18px 30px;
+            padding: 14px;
             border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 700;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
             width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
             margin-top: 10px;
         }
 
         .btn-generate {
-            background: linear-gradient(135deg, #8B0000, #B22222);
+            background: #ff0000;
             color: white;
-            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
         }
 
         .btn-generate:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.8);
-            background: linear-gradient(135deg, #B22222, #ff0000);
-        }
-
-        .btn-preview {
-            background: #2a2a2a;
-            color: #ff6b6b;
-            border: 2px solid #8B0000;
-        }
-
-        .btn-preview:hover {
-            background: #3a0000;
-            transform: translateY(-3px);
-            border-color: #ff0000;
+            background: #ff4444;
         }
 
         .result-container {
             display: none;
-            margin-top: 30px;
-            padding: 25px;
+            margin-top: 20px;
+            padding: 20px;
             background: #2a0000;
-            border-radius: 12px;
-            border: 2px solid #8B0000;
+            border-radius: 8px;
+            border: 1px solid #8B0000;
         }
 
         .result-link {
             word-break: break-all;
-            padding: 15px;
+            padding: 12px;
             background: #1a0000;
-            border-radius: 8px;
-            border: 1px solid #8B0000;
-            margin-bottom: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
             font-size: 14px;
             color: #ff6b6b;
             font-family: 'Courier New', monospace;
@@ -174,519 +111,73 @@
 
         .link-actions {
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .copy-btn {
+        .copy-btn, .shorten-btn {
             background: #8B0000;
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.3s;
             flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
-        .copy-btn:hover {
+        .copy-btn:hover, .shorten-btn:hover {
             background: #B22222;
-        }
-
-        .shorten-btn {
-            background: #B22222;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .shorten-btn:hover {
-            background: #8B0000;
         }
 
         .loading {
             display: none;
             text-align: center;
             color: #ff4444;
-            margin: 15px 0;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Стили для страницы клиента */
-        .virus-alert {
-            background: linear-gradient(135deg, #8B0000, #B22222);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            border: 2px solid #ff0000;
-            text-align: center;
-            animation: alertPulse 1.5s infinite;
-        }
-
-        @keyframes alertPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
-        .virus-alert h2 {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .critical-warning {
-            background: #000;
-            color: #ff0000;
-            padding: 25px;
-            border: 3px solid #ff0000;
-            border-radius: 12px;
-            text-align: center;
-            margin: 25px 0;
-            animation: criticalFlash 1s infinite;
-        }
-
-        @keyframes criticalFlash {
-            0%, 100% { background: #000; }
-            50% { background: #450000; }
-        }
-
-        .threat-level {
-            background: #ff0000;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 900;
-            font-size: 20px;
-            margin: 20px 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            animation: threatPulse 0.8s infinite;
-        }
-
-        @keyframes threatPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .btn-emergency {
-            background: linear-gradient(135deg, #ff0000, #B22222);
-            color: white;
-            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
-            animation: emergencyPulse 1s infinite;
-            font-size: 20px;
-            padding: 22px 30px;
-        }
-
-        @keyframes emergencyPulse {
-            0%, 100% { box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6); }
-            50% { box-shadow: 0 6px 30px rgba(255, 0, 0, 0.9); }
-        }
-
-        .btn-emergency:hover {
-            transform: translateY(-3px);
-            background: linear-gradient(135deg, #ff4444, #ff0000);
-        }
-
-        .hotline-number {
-            background: #000;
-            color: #ff0000;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 25px 0;
-            border: 3px solid #ff0000;
-            font-size: 32px;
-            font-weight: 900;
-            animation: numberPulse 0.5s infinite;
-        }
-
-        @keyframes numberPulse {
-            0%, 100% { transform: scale(1); color: #ff0000; }
-            50% { transform: scale(1.05); color: #ff6b6b; }
-        }
-
-        .countdown {
-            background: #000;
-            color: #ff0000;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 20px 0;
-            border: 2px solid #ff0000;
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .security-log {
-            background: #1a0000;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 20px 0;
-            border: 1px solid #8B0000;
-            font-family: 'Courier New', monospace;
-        }
-
-        .log-entry {
-            color: #ff6b6b;
-            margin-bottom: 10px;
-            padding: 8px;
-            border-left: 3px solid #ff0000;
-            background: #2a0000;
-        }
-
-        .log-time {
-            color: #ff0000;
-            font-weight: bold;
-        }
-
-        .virus-scan {
-            background: #2a0000;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            border: 1px solid #ff0000;
-            text-align: center;
-        }
-
-        .scan-progress {
-            width: 100%;
-            height: 20px;
-            background: #1a0000;
-            border-radius: 10px;
-            margin: 15px 0;
-            overflow: hidden;
-            border: 1px solid #ff0000;
-        }
-
-        .scan-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #ff0000, #ff6b6b);
-            width: 0%;
-            animation: scanProgress 3s infinite;
-        }
-
-        @keyframes scanProgress {
-            0% { width: 0%; }
-            50% { width: 100%; }
-            100% { width: 0%; }
-        }
-
-        .warning-text {
-            color: #ff0000;
-            font-size: 18px;
-            text-align: center;
-            margin: 15px 0;
-            font-weight: 700;
-            background: #2a0000;
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #ff0000;
-            text-transform: uppercase;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.7; }
-        }
-
-        .device-warning {
-            background: #8B0000;
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
-            border: 2px solid #ff0000;
-        }
-
-        .emergency-contact {
-            background: #000;
-            color: #ff0000;
-            padding: 30px;
-            border-radius: 16px;
-            text-align: center;
-            margin: 30px 0;
-            border: 4px solid #ff0000;
-            animation: contactPulse 2s infinite;
-        }
-
-        @keyframes contactPulse {
-            0%, 100% { border-color: #ff0000; }
-            50% { border-color: #ff6b6b; }
-        }
-
-        .contact-number {
-            font-size: 36px;
-            font-weight: 900;
-            margin: 20px 0;
-            color: #ff0000;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
-        }
-
-        .timer {
-            font-size: 48px;
-            font-weight: 900;
-            color: #ff0000;
-            text-align: center;
-            margin: 20px 0;
-            text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-            animation: timerPulse 0.5s infinite;
-        }
-
-        @keyframes timerPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .threat-details {
-            background: #1a0000;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 20px 0;
-            border: 1px solid #ff0000;
-        }
-
-        .threat-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #8B0000;
-            color: #ff6b6b;
-        }
-
-        .threat-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .threat-label {
-            color: #ff6b6b;
-            font-weight: 600;
-        }
-
-        .threat-value {
-            color: #ff0000;
-            font-weight: 700;
-        }
-
-        .safety-protocol {
-            background: #2a0000;
-            color: #ff6b6b;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            border: 1px solid #ff0000;
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                max-width: 100%;
-            }
-            
-            .card {
-                padding: 30px 20px;
-            }
-            
-            h1 {
-                font-size: 24px;
-            }
-            
-            .hotline-number {
-                font-size: 24px;
-                padding: 20px;
-            }
-            
-            .contact-number {
-                font-size: 28px;
-            }
-            
-            .timer {
-                font-size: 36px;
-            }
-            
-            .link-actions {
-                flex-direction: column;
-            }
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
-    <!-- Панель генератора -->
-    <div class="container" id="generatorContainer">
+    <div class="container">
         <div class="card">
-            <h1><i class="fas fa-bug"></i> Генератор уведомлений безопасности</h1>
+            <h1><i class="fas fa-link"></i> Генератор ссылок</h1>
             
             <div class="form-group">
-                <label for="fullName"><i class="fas fa-user"></i> ФИО клиента</label>
-                <input type="text" id="fullName" placeholder="Введите ФИО клиента" value="НОВИК РАИСА СТЕПАНОВНА">
+                <label>ФИО клиента</label>
+                <input type="text" id="fullName" placeholder="Введите ФИО" value="НОВИК РАИСА СТЕПАНОВНА">
             </div>
             
             <div class="form-group">
-                <label for="phone"><i class="fas fa-phone"></i> Номер телефона</label>
-                <input type="text" id="phone" placeholder="Введите номер телефона" value="79052411441">
+                <label>Номер телефона</label>
+                <input type="text" id="phone" placeholder="Введите номер" value="79052411441">
             </div>
             
             <button class="btn btn-generate" id="generateBtn">
-                <i class="fas fa-bolt"></i> Сгенерировать ссылку-предупреждение
+                Сгенерировать ссылку
             </button>
             
             <div class="result-container" id="resultContainer">
-                <h3 style="color: #ff6b6b; text-align: center; margin-bottom: 15px;">
-                    <i class="fas fa-check-circle"></i> Ссылка-предупреждение сгенерирована!
-                </h3>
-                <p style="color: #ff6b6b; text-align: center; margin-bottom: 15px;">Скопируйте эту ссылку и отправьте клиенту:</p>
                 <div class="result-link" id="generatedLink"></div>
                 
                 <div class="loading" id="loadingShorten">
-                    <i class="fas fa-spinner fa-spin"></i> Сокращаем ссылку...
+                    <i class="fas fa-spinner fa-spin"></i> Сокращаем...
                 </div>
                 
                 <div class="link-actions">
                     <button class="copy-btn" id="copyBtn">
-                        <i class="fas fa-copy"></i> Копировать ссылку
+                        <i class="fas fa-copy"></i> Копировать
                     </button>
                     <button class="shorten-btn" id="shortenBtn">
-                        <i class="fas fa-compress-alt"></i> Сократить ссылку
+                        <i class="fas fa-compress-alt"></i> Сократить
                     </button>
                 </div>
-            </div>
-            
-            <button class="btn btn-preview" id="previewBtn">
-                <i class="fas fa-eye"></i> Предпросмотр страницы
-            </button>
-        </div>
-    </div>
-
-    <!-- Страница клиента (скрыта по умолчанию) -->
-    <div class="container" id="clientContainer" style="display: none;">
-        <div class="card">
-            <!-- Главный заголовок -->
-            <h1>🚨 КРИТИЧЕСКАЯ УГРОЗА БЕЗОПАСНОСТИ 🚨</h1>
-            
-            <!-- Предупреждение о вирусе -->
-            <div class="virus-alert">
-                <h2><i class="fas fa-virus"></i> ОБНАРУЖЕН ВИРУС-ТРОЯН</h2>
-                <p>Ваше устройство заражено вредоносной программой!</p>
-                <p>Троян активировал несанкционированные платежи через СБП</p>
-            </div>
-
-            <!-- Уровень угрозы -->
-            <div class="threat-level">
-                УРОВЕНЬ УГРОЗЫ: КРИТИЧЕСКИЙ
-            </div>
-
-            <!-- Срочный таймер -->
-            <div class="countdown">
-                <div class="timer" id="countdownTimer">05:00</div>
-                <p>До блокировки всех средств осталось:</p>
-            </div>
-
-            <!-- Детали угрозы -->
-            <div class="threat-details">
-                <div class="threat-item">
-                    <span class="threat-label">Тип угрозы:</span>
-                    <span class="threat-value">Банковский троян</span>
-                </div>
-                <div class="threat-item">
-                    <span class="threat-label">Пораженная система:</span>
-                    <span class="threat-value">СБП / Мобильный банк</span>
-                </div>
-                <div class="threat-item">
-                    <span class="threat-label">Статус:</span>
-                    <span class="threat-value">АКТИВНАЯ УТЕЧКА СРЕДСТВ</span>
-                </div>
-                <div class="threat-item">
-                    <span class="threat-label">Ваши данные:</span>
-                    <span class="threat-value" id="clientName">НОВИК РАИСА СТЕПАНОВНА</span>
-                </div>
-            </div>
-
-            <!-- Предупреждение об устройстве -->
-            <div class="device-warning">
-                <h3><i class="fas fa-exclamation-triangle"></i> ВАШЕ УСТРОЙСТВО СКОМПРОМЕТИРОВАНО</h3>
-                <p>Не используйте банковские приложения до очистки системы!</p>
-            </div>
-
-            <!-- Лог безопасности -->
-            <div class="security-log">
-                <div class="log-entry"><span class="log-time">[15:42:03]</span> Обнаружен процесс: trojan_sbp.exe</div>
-                <div class="log-entry"><span class="log-time">[15:42:15]</span> Несанкционированный доступ к СБП</div>
-                <div class="log-entry"><span class="log-time">[15:42:28]</span> Инициированы фоновые транзакции</div>
-                <div class="log-entry"><span class="log-time">[15:43:01]</span> УТЕЧКА ДАННЫХ: банковские реквизиты</div>
-            </div>
-
-            <!-- Сканирование вируса -->
-            <div class="virus-scan">
-                <h3><i class="fas fa-shield-virus"></i> СКАНИРОВАНИЕ УГРОЗ</h3>
-                <div class="scan-progress">
-                    <div class="scan-bar"></div>
-                </div>
-                <p>Обнаружено: 3 активных угрозы</p>
-            </div>
-
-            <!-- Критическое предупреждение -->
-            <div class="critical-warning">
-                <h2>🚨 ВАШИ СРЕДСТВА ПОД УГРОЗОЙ! 🚨</h2>
-                <p>Немедленные действия необходимы для защиты ваших финансов</p>
-            </div>
-
-            <!-- Горячая линия -->
-            <div class="emergency-contact">
-                <h2><i class="fas fa-phone-alt"></i> ЭКСТРЕННАЯ ГОРЯЧАЯ ЛИНИЯ</h2>
-                <p>СЛУЖБА БЕЗОПАСНОСТИ СБП</p>
-                <div class="contact-number">7 (979) 006-26-72</div>
-                <p>Операторы доступны 24/7 для экстренной блокировки</p>
-            </div>
-
-            <!-- Протокол безопасности -->
-            <div class="safety-protocol">
-                <h3><i class="fas fa-list-check"></i> ПРОТОКОЛ БЕЗОПАСНОСТИ:</h3>
-                <p>1. НЕМЕДЛЕННО ПЕРЕЗВОНИТЕ НА ГОРЯЧУЮ ЛИНИЮ</p>
-                <p>2. НЕ ИСПОЛЬЗУЙТЕ БАНКОВСКИЕ ПРИЛОЖЕНИЯ</p>
-                <p>3. СООБЩИТЕ ОПЕРАТОРУ КОД УГРОЗЫ: SBP-TROJAN-2024</p>
-            </div>
-
-            <!-- Срочный вызов -->
-            <a href="tel:+79790062672" class="btn btn-emergency" id="emergencyCallBtn">
-                <i class="fas fa-phone" style="margin-right: 15px;"></i>
-                СРОЧНЫЙ ВЫЗОВ СЛУЖБЫ БЕЗОПАСНОСТИ
-            </a>
-
-            <!-- Финальное предупреждение -->
-            <div class="warning-text">
-                ⚠️ ВНИМАНИЕ: ОТСУТСТВИЕ ДЕЙСТВИЙ ПРИВЕДЕТ К ПОТЕРЕ СРЕДСТВ! ⚠️
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const generatorContainer = document.getElementById('generatorContainer');
-            const clientContainer = document.getElementById('clientContainer');
             const generateBtn = document.getElementById('generateBtn');
-            const previewBtn = document.getElementById('previewBtn');
             const copyBtn = document.getElementById('copyBtn');
             const shortenBtn = document.getElementById('shortenBtn');
             const resultContainer = document.getElementById('resultContainer');
@@ -694,22 +185,15 @@
             const loadingShorten = document.getElementById('loadingShorten');
             const fullNameInput = document.getElementById('fullName');
             const phoneInput = document.getElementById('phone');
-            
-            // Элементы страницы клиента
-            const clientName = document.getElementById('clientName');
-            const countdownTimer = document.getElementById('countdownTimer');
-            const emergencyCallBtn = document.getElementById('emergencyCallBtn');
 
             let currentLongUrl = '';
-            let countdownInterval;
 
             // Функция для сокращения ссылки через clck.ru
             async function shortenUrl(longUrl) {
                 try {
-                    loadingShorten.style.display = 'flex';
+                    loadingShorten.style.display = 'block';
                     shortenBtn.disabled = true;
                     
-                    // Используем API clck.ru
                     const response = await fetch(`https://clck.ru/--?url=${encodeURIComponent(longUrl)}`);
                     
                     if (response.ok) {
@@ -720,7 +204,6 @@
                     }
                 } catch (error) {
                     console.error('Ошибка:', error);
-                    // Если API не работает, возвращаем оригинальную ссылку
                     return longUrl;
                 } finally {
                     loadingShorten.style.display = 'none';
@@ -734,16 +217,14 @@
                 const phone = phoneInput.value.trim();
                 
                 if (!fullName || !phone) {
-                    alert('Пожалуйста, заполните все поля!');
+                    alert('Заполните все поля!');
                     return;
                 }
                 
-                // Создаем URL с параметрами
                 const baseUrl = window.location.href.split('?')[0];
                 const params = new URLSearchParams({
                     name: encodeURIComponent(fullName),
-                    phone: encodeURIComponent(phone),
-                    date: new Date().toLocaleDateString('ru-RU')
+                    phone: encodeURIComponent(phone)
                 });
                 
                 currentLongUrl = `${baseUrl}?${params.toString()}#client`;
@@ -753,15 +234,10 @@
 
             // Сокращение ссылки
             shortenBtn.addEventListener('click', async function() {
-                if (!currentLongUrl) {
-                    alert('Сначала сгенерируйте ссылку!');
-                    return;
-                }
+                if (!currentLongUrl) return;
                 
                 const shortUrl = await shortenUrl(currentLongUrl);
                 generatedLink.textContent = shortUrl;
-                
-                // Обновляем текущую ссылку на сокращенную
                 currentLongUrl = shortUrl;
             });
 
@@ -775,80 +251,6 @@
                         copyBtn.innerHTML = originalText;
                     }, 2000);
                 });
-            });
-
-            // Предпросмотр страницы
-            previewBtn.addEventListener('click', function() {
-                const fullName = fullNameInput.value.trim();
-                const phone = phoneInput.value.trim();
-                
-                if (!fullName || !phone) {
-                    alert('Пожалуйста, заполните все поля перед просмотром!');
-                    return;
-                }
-                
-                // Обновляем данные на странице клиента
-                clientName.textContent = fullName;
-                
-                // Запускаем таймер
-                startCountdown();
-                
-                // Переключаемся на страницу клиента
-                generatorContainer.style.display = 'none';
-                clientContainer.style.display = 'flex';
-            });
-
-            // Таймер обратного отсчета
-            function startCountdown() {
-                let timeLeft = 5 * 60; // 5 минут
-                
-                function updateTimer() {
-                    const minutes = Math.floor(timeLeft / 60);
-                    const seconds = timeLeft % 60;
-                    countdownTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    
-                    if (timeLeft > 0) {
-                        timeLeft--;
-                        countdownInterval = setTimeout(updateTimer, 1000);
-                    } else {
-                        countdownTimer.textContent = "00:00";
-                        countdownTimer.style.color = "#ff0000";
-                        countdownTimer.style.animation = "none";
-                    }
-                }
-                
-                updateTimer();
-            }
-
-            // Проверяем, открыта ли страница как клиентская
-            function checkClientPage() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const hash = window.location.hash;
-                
-                if (hash === '#client' || urlParams.has('name')) {
-                    const name = urlParams.get('name') ? decodeURIComponent(urlParams.get('name')) : 'Клиент';
-                    const phone = urlParams.get('phone') ? decodeURIComponent(urlParams.get('phone')) : 'Не указан';
-                    
-                    // Обновляем данные на странице клиента
-                    clientName.textContent = name;
-                    
-                    // Запускаем таймер
-                    startCountdown();
-                    
-                    // Показываем страницу клиента
-                    generatorContainer.style.display = 'none';
-                    clientContainer.style.display = 'flex';
-                }
-            }
-
-            // Проверяем при загрузке
-            checkClientPage();
-
-            // Очистка таймера при уходе со страницы
-            window.addEventListener('beforeunload', function() {
-                if (countdownInterval) {
-                    clearTimeout(countdownInterval);
-                }
             });
         });
     </script>
