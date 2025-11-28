@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор уведомлений</title>
+    <title>Генератор уведомлений безопасности</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,7 +14,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #8B0000 0%, #2c0000 100%);
+            background: linear-gradient(135deg, #8B0000 0%, #450000 50%, #2c0000 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -23,43 +23,63 @@
         }
 
         .container {
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .card {
             background: #1a1a1a;
             border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.4);
-            border: 2px solid #ff0000;
+            padding: 40px 35px;
+            box-shadow: 0 15px 35px rgba(255, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #ff0000;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, #ff0000, #ff6b6b, #ff0000);
         }
 
         h1 {
             color: #ff0000;
-            margin-bottom: 20px;
-            font-size: 24px;
-            font-weight: 700;
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 900;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: #ff6b6b;
             font-weight: 600;
+            font-size: 16px;
         }
 
         input {
             width: 100%;
-            padding: 14px;
+            padding: 16px 20px;
             border: 2px solid #8B0000;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
+            transition: all 0.3s;
             background: #2a2a2a;
             color: white;
         }
@@ -67,43 +87,67 @@
         input:focus {
             outline: none;
             border-color: #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
         }
 
         .btn {
-            padding: 14px;
+            padding: 16px 30px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-top: 10px;
         }
 
         .btn-generate {
-            background: #ff0000;
+            background: linear-gradient(135deg, #8B0000, #B22222);
             color: white;
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
         }
 
         .btn-generate:hover {
-            background: #ff4444;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.8);
+            background: linear-gradient(135deg, #B22222, #ff0000);
+        }
+
+        .btn-preview {
+            background: #2a2a2a;
+            color: #ff6b6b;
+            border: 2px solid #8B0000;
+        }
+
+        .btn-preview:hover {
+            background: #3a0000;
+            transform: translateY(-3px);
+            border-color: #ff0000;
         }
 
         .result-container {
             display: none;
-            margin-top: 20px;
-            padding: 20px;
+            margin-top: 30px;
+            padding: 25px;
             background: #2a0000;
-            border-radius: 8px;
-            border: 1px solid #8B0000;
+            border-radius: 12px;
+            border: 2px solid #8B0000;
         }
 
         .result-link {
             word-break: break-all;
-            padding: 12px;
+            padding: 15px;
             background: #1a0000;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #8B0000;
+            margin-bottom: 20px;
             font-size: 14px;
             color: #ff6b6b;
             font-family: 'Courier New', monospace;
@@ -111,148 +155,134 @@
 
         .link-actions {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        .copy-btn, .shorten-btn {
+        .copy-btn {
             background: #8B0000;
             color: white;
             border: none;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px 20px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
+            transition: background 0.3s;
             flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .copy-btn:hover, .shorten-btn:hover {
+        .copy-btn:hover {
             background: #B22222;
+        }
+
+        .shorten-btn {
+            background: #B22222;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .shorten-btn:hover {
+            background: #8B0000;
         }
 
         .loading {
             display: none;
             text-align: center;
             color: #ff4444;
-            margin: 10px 0;
+            margin: 15px 0;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            color: #4CAF50;
+            margin: 15px 0;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .card {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .link-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Панель генератора -->
+    <div class="container" id="generatorContainer">
         <div class="card">
-            <h1><i class="fas fa-link"></i> Генератор ссылок</h1>
+            <h1><i class="fas fa-bug"></i> Генератор уведомлений безопасности</h1>
             
             <div class="form-group">
-                <label>ФИО клиента</label>
-                <input type="text" id="fullName" placeholder="Введите ФИО" value="НОВИК РАИСА СТЕПАНОВНА">
+                <label for="fullName"><i class="fas fa-user"></i> ФИО клиента</label>
+                <input type="text" id="fullName" placeholder="Введите ФИО клиента" value="НОВИК РАИСА СТЕПАНОВНА">
             </div>
             
             <div class="form-group">
-                <label>Номер телефона</label>
-                <input type="text" id="phone" placeholder="Введите номер" value="79052411441">
+                <label for="phone"><i class="fas fa-phone"></i> Номер телефона</label>
+                <input type="text" id="phone" placeholder="Введите номер телефона" value="79052411441">
             </div>
             
             <button class="btn btn-generate" id="generateBtn">
-                Сгенерировать ссылку
+                <i class="fas fa-bolt"></i> Сгенерировать ссылку
             </button>
             
             <div class="result-container" id="resultContainer">
+                <h3 style="color: #ff6b6b; text-align: center; margin-bottom: 15px;">
+                    <i class="fas fa-check-circle"></i> Ссылка сгенерирована!
+                </h3>
+                <p style="color: #ff6b6b; text-align: center; margin-bottom: 15px;">Скопируйте эту ссылку и отправьте клиенту:</p>
                 <div class="result-link" id="generatedLink"></div>
                 
                 <div class="loading" id="loadingShorten">
-                    <i class="fas fa-spinner fa-spin"></i> Сокращаем...
+                    <i class="fas fa-spinner fa-spin"></i> Сокращаем ссылку через clck.ru...
+                </div>
+
+                <div class="success-message" id="successMessage">
+                    <i class="fas fa-check"></i> Ссылка успешно сокращена!
                 </div>
                 
                 <div class="link-actions">
                     <button class="copy-btn" id="copyBtn">
-                        <i class="fas fa-copy"></i> Копировать
+                        <i class="fas fa-copy"></i> Копировать ссылку
                     </button>
                     <button class="shorten-btn" id="shortenBtn">
-                        <i class="fas fa-compress-alt"></i> Сократить
+                        <i class="fas fa-compress-alt"></i> Сократить через clck.ru
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const generateBtn = document.getElementById('generateBtn');
-            const copyBtn = document.getElementById('copyBtn');
-            const shortenBtn = document.getElementById('shortenBtn');
-            const resultContainer = document.getElementById('resultContainer');
-            const generatedLink = document.getElementById('generatedLink');
-            const loadingShorten = document.getElementById('loadingShorten');
-            const fullNameInput = document.getElementById('fullName');
-            const phoneInput = document.getElementById('phone');
-
-            let currentLongUrl = '';
-
-            // Функция для сокращения ссылки через clck.ru
-            async function shortenUrl(longUrl) {
-                try {
-                    loadingShorten.style.display = 'block';
-                    shortenBtn.disabled = true;
-                    
-                    const response = await fetch(`https://clck.ru/--?url=${encodeURIComponent(longUrl)}`);
-                    
-                    if (response.ok) {
-                        const shortUrl = await response.text();
-                        return shortUrl;
-                    } else {
-                        throw new Error('Ошибка при сокращении ссылки');
-                    }
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                    return longUrl;
-                } finally {
-                    loadingShorten.style.display = 'none';
-                    shortenBtn.disabled = false;
-                }
-            }
-
-            // Генерация ссылки
-            generateBtn.addEventListener('click', function() {
-                const fullName = fullNameInput.value.trim();
-                const phone = phoneInput.value.trim();
-                
-                if (!fullName || !phone) {
-                    alert('Заполните все поля!');
-                    return;
-                }
-                
-                const baseUrl = window.location.href.split('?')[0];
-                const params = new URLSearchParams({
-                    name: encodeURIComponent(fullName),
-                    phone: encodeURIComponent(phone)
-                });
-                
-                currentLongUrl = `${baseUrl}?${params.toString()}#client`;
-                generatedLink.textContent = currentLongUrl;
-                resultContainer.style.display = 'block';
-            });
-
-            // Сокращение ссылки
-            shortenBtn.addEventListener('click', async function() {
-                if (!currentLongUrl) return;
-                
-                const shortUrl = await shortenUrl(currentLongUrl);
-                generatedLink.textContent = shortUrl;
-                currentLongUrl = shortUrl;
-            });
-
-            // Копирование ссылки
-            copyBtn.addEventListener('click', function() {
-                const link = generatedLink.textContent;
-                navigator.clipboard.writeText(link).then(function() {
-                    const originalText = copyBtn.innerHTML;
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
-                    setTimeout(() => {
-                        copyBtn.innerHTML = originalText;
-                    }, 2000);
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+            
+            <button class="btn btn-preview" id="previewBtn">
+               
